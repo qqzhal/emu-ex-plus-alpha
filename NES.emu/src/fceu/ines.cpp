@@ -527,7 +527,7 @@ typedef struct {
 // to something more unified for ines 2.0 specific
 static int not_power2[] =
 {
-	53, 198, 228, 547
+	53, 195, 198, 228, 547
 };
 
 BMAPPINGLocal bmap[] = {
@@ -848,6 +848,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	head.cleanup();
 
 	iNESCart.clear();
+	iNESCart.totalFileSize = filesize;
 
 	iNES2 = ((head.ROM_type2 & 0x0C) == 0x08);
 	if(iNES2)
