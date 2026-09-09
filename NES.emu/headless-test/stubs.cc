@@ -151,11 +151,27 @@ void emulateSound(EmuAudio *audio) {}
 
 // ---- sound.cpp entry points referenced by ppu.cpp (sound.cpp not built) ----
 void FCEUSND_Power() {}
-void SetNESDeemph_OldHacky(int which, int force) {}
+void SetNESDeemph_OldHacky(uint8 which, int force) {}
+void FCEU_SoundCPUHook(int a) {}
 bool DMC_7bit = false;
 bool skip_7bit_overclocking = true;
 bool overclock_enabled = false;
 int dendy = 0;
+int PAL = 0;
+static uint8 RAMBuf[0x800];
+uint8 *RAM = RAMBuf;
+
+// ---- movie.cpp globals referenced by ppu.cpp/fceu.cpp ----
+int StackAddrBackup = -1;
+
+// ---- debug.cpp counters ----
+void IncrementInstructionsCounters() {}
+
+// ---- input.cpp scanline hook ----
+void InputScanlineHook(uint8 *bg, uint8 *spr, uint32 scanline, int crt) {}
+
+// ---- nsf.cpp (not built) ----
+void DoNSFFrame() {}
 
 // ---- input.cpp entry point (input.cpp not built) ----
 void FCEU_UpdateInput() {}
