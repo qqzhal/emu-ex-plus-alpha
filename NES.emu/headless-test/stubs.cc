@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "emuframework/EmuApp.hh" // stub header with minimal EmuEx types
 #include "fceu/types.h"
 #include "fceu/fceu.h"
 #include "fceu/cart.h"
@@ -151,9 +152,9 @@ void emulateSound(EmuAudio *audio) {}
 // ---- sound.cpp entry points referenced by ppu.cpp (sound.cpp not built) ----
 void FCEUSND_Power() {}
 void SetNESDeemph_OldHacky(int which, int force) {}
-int DMC_7bit = 0;
-int skip_7bit_overclocking = 1;
-int overclock_enabled = 0;
+bool DMC_7bit = false;
+bool skip_7bit_overclocking = true;
+bool overclock_enabled = false;
 int dendy = 0;
 
 // ---- input.cpp entry point (input.cpp not built) ----
