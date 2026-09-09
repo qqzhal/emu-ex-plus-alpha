@@ -65,21 +65,8 @@ void SetWriteHandler(int32 start, int32 end, writefunc func) {
 		BWrite[x] = func;
 }
 
-// ---- globals owned by ppu.cpp / x6502.cpp ----
-uint32 timestamp = 0;
-uint32 soundtimestamp = 0;
-uint8 PPU[4];
-uint8 PPUCHRRAM = 0;
+// ---- globals owned by ppu.cpp / x6502.cpp (built from source, nothing to stub) ----
 uint8 *UNIFchrrama = nullptr;
-void (*GameHBIRQHook)(void) = nullptr;
-void (*GameHBIRQHook2)(void) = nullptr;
-
-void X6502_IRQBegin(int w) {}
-void X6502_IRQEnd(int w) {}
-
-// ---- x6502.cpp debug hooks ----
-uint8 X6502_DMR(uint32 A) { return 0xFF; }
-void X6502_DMW(uint32 A, uint8 V) {}
 
 // ---- fceu.cpp ----
 int eoptions = 0;
@@ -92,38 +79,6 @@ void FCEU_MemoryRand(uint8 *ptr, uint32 size, bool default_zero) {
 SFORMAT FCEUVSUNI_STATEINFO[] = {
 	{ 0 }
 };
-
-// ---- ppu.cpp globals (ppu.cpp is not built here: it depends on the
-// imagine/EmuFramework render front-end) ----
-uint8 PALRAM[0x20];
-uint8 UPALRAM[3];
-uint8 NTARAM[0x800];
-uint8 *vnapage[4];
-uint8 PPUNTARAM = 0;
-uint32 NTRefreshAddr = 0;
-void (*PPU_hook)(uint32 A) = nullptr;
-uint8 (FASTCALL *FFCEUX_PPURead)(uint32 A) = nullptr;
-void (*FFCEUX_PPUWrite)(uint32 A, uint8 V) = nullptr;
-void PPU_ResetHooks() {}
-int newppu = 0;
-int newppu_get_scanline() { return 0; }
-int newppu_get_dot() { return 0; }
-PPUPHASE ppuphase = PPUPHASE_VBL;
-int fceuindbg = 0;
-int PEC586Hack = 0;
-int QTAIHack = 0;
-uint8 qtaintramreg = 0;
-int MMC5Hack = 0;
-uint8 MMC5HackCHRMode = 0;
-uint32 MMC5HackVROMMask = 0;
-uint8 *MMC5HackExNTARAMPtr = nullptr;
-uint8 *MMC5HackVROMPTR = nullptr;
-uint8 MMC5HackSPMode = 0;
-uint8 MMC5HackSPScroll = 0;
-uint8 MMC5HackSPPage = 0;
-uint8 MMC50x5130 = 0;
-uint8 *FCEUPPU_GetCHR(uint32 vadr, uint32 refreshaddr) { return nullptr; }
-void FCEUPPU_LineUpdate() {}
 
 // ---- sound.cpp globals (not built here) ----
 EXPSOUND GameExpSound = { nullptr, nullptr, nullptr, nullptr, nullptr };
@@ -140,8 +95,6 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1) { return std::str
 std::string curMovieFilename;
 uint64 xoroshiro128plus_next() { return 0; }
 FCEUS FSettings;
-static void MapIRQHookDummy(int a) {}
-void (*MapIRQHook)(int a) = MapIRQHookDummy;
 
 // ---- front-end render/audio callbacks (main/Main.cc in the real app) ----
 void FCEUPPU_FrameReady(EmuEx::EmuSystemTaskContext, EmuEx::NesSystem&, EmuEx::EmuVideo*, uint8*) {}
