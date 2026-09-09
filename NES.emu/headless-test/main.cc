@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdint>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -26,9 +27,14 @@
 #include "fceu/cart.h"
 #include "fceu/file.h"
 #include "fceu/ppu.h"
+#include "fceu/x6502.h"
+#include "fceu/boards/mmc3.h"
 
 // declared in fceu.cpp / defined in ines.cpp (static there, no header)
 int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode);
+
+// defined by the MMC3 board (not exposed in a header)
+extern uint8 *CHRRAM;
 
 bool HeadlessHasExState(const char *tag);
 
@@ -213,6 +219,112 @@ static void runCase(const char *path, int prg16k, const std::vector<uint8> &prg,
 	printf("\n");
 }
 
+// ---- live-emulation case: real CPU (x6502) + real PPU timing loop ----
+// Boot the ROM and run frames through FCEUPPU_Loop exactly like the app
+// does. A black-screen-at-boot regression shows up as a jammed CPU or a
+// dead PC (the patch layer copied from the wrong PRG bank and the code
+// falling into uninitialized RAM), so assert liveness instead of pixels.
+
+static uint8 emuRAM[0x800];
+
+static DECLFR(EmuARAML) {
+	return emuRAM[A & 0x7FF];
+}
+
+static DECLFW(EmuBRAML) {
+	emuRAM[A & 0x7FF] = V;
+}
+
+// capture PPU/MMC3 liveness across frames
+static bool g_displaySeen;
+static bool g_irqReloadSeen;
+
+static void runEmuCase(const char *path) {
+	printf("== emu run: %s (real CPU + PPU timing, 240 frames)\n", path);
+
+	int userCancel = 0;
+	FCEUFILE *fp = FCEU_fopen(path, 0, "rb", 0, 0, nullptr, &userCancel);
+	if (!fp) {
+		printf("  [FAIL] cannot open %s\n", path);
+		g_failures++;
+		return;
+	}
+	if (iNESLoad(path, fp, 0) != LOADER_OK) {
+		printf("  [FAIL] iNESLoad failed\n");
+		g_failures++;
+		FCEU_fclose(fp);
+		return;
+	}
+
+	memset(emuRAM, 0, sizeof(emuRAM));
+	SetReadHandler(0x0000, 0x1FFF, EmuARAML);
+	SetWriteHandler(0x0000, 0x1FFF, EmuBRAML);
+
+	FSettings.UsrFirstSLine[0] = FSettings.UsrLastSLine[0] = 0;
+	FSettings.UsrFirstSLine[1] = FSettings.UsrLastSLine[1] = 0;
+	FCEUPPU_Init();
+	FCEUPPU_SetVideoSystem(0);
+	currCartInfo->Power();
+	FCEUPPU_Power();
+	X6502_Init();
+	X6502_Power();
+
+	const int frames = 240;
+	std::vector<uint16> pcs;
+	g_displaySeen = false;
+	g_irqReloadSeen = false;
+	int ppuOnFrames = 0;
+	for (int f = 0; f < frames; f++) {
+		EmuEx::NesSystem sys;
+		FCEUPPU_Loop(EmuEx::EmuSystemTaskContext{}, sys, nullptr, nullptr, 0);
+		pcs.push_back(X.PC);
+		if (PPU[1] & 0x18) {
+			ppuOnFrames++;
+			g_displaySeen = true;
+		}
+		if (IRQa || IRQCount)
+			g_irqReloadSeen = true;
+	}
+
+	// 1. the 12KB patch layer must have been copied into $5000-$7FFF
+	int xramNonZero = 0, wramNonZero = 0;
+	for (int a = 0x5000; a < 0x6000; a++)
+		xramNonZero += rd(a) != 0;
+	for (int a = 0x6000; a < 0x7000; a++)
+		wramNonZero += rd(a) != 0;
+	CHECK(xramNonZero > 0, "patch layer present in $5000-$5FFF XRAM");
+	CHECK(wramNonZero > 0, "game data present in $6000-$7FFF WRAM");
+
+	// 2. CPU liveness: a bank-mangling black screen jams or freezes the CPU
+	CHECK(!X.jammed, "CPU not jammed");
+	int lastUnique = 0;
+	{
+		std::vector<uint16> tail(pcs.end() - 60, pcs.end());
+		std::sort(tail.begin(), tail.end());
+		lastUnique = (int)(std::unique(tail.begin(), tail.end()) - tail.begin());
+	}
+	CHECK(lastUnique >= 4, "PC keeps moving in the last 60 frames");
+
+	// 3. the game turned the display on
+	CHECK(g_displaySeen, "PPU rendering enabled during boot");
+	CHECK(ppuOnFrames > 0, "at least one frame rendered with display on");
+
+	// 4. the MMC3 scanline IRQ clocked (game effects rely on it)
+	CHECK(g_irqReloadSeen, "MMC3 IRQ counter active");
+
+	// 5. font tiles written into the 4KB CHR RAM
+	int chrNonZero = 0;
+	if (CHRRAM)
+		for (int i = 0; i < 4096; i += 8)
+			chrNonZero += CHRRAM[i] != 0;
+	CHECK(chrNonZero > 8, "game wrote tiles into CHR RAM");
+
+	printf("  info: last PC=$%04X display-on frames=%d XRAM non-zero bytes=%d\n",
+		X.PC, ppuOnFrames, xramNonZero);
+
+	FCEU_fclose(fp);
+}
+
 int main(int argc, char **argv) {
 	static FCEUGI gi;
 	GameInfo = &gi;
@@ -245,6 +357,12 @@ int main(int argc, char **argv) {
 	runCase("h195_game.nes", 80, prg, chr);
 	runCase("h195_game2.nes", 96, prg2, chr2);
 	runCase("h195_origin.nes", 32, prg0, chr0);
+
+	// live CPU + PPU run: this is where a black-screen-at-boot regression
+	// (bank mangling, dead patch layer, dead IRQ) would show up
+	runEmuCase("h195_game.nes");
+	runEmuCase("h195_game2.nes");
+	runEmuCase("h195_origin.nes");
 
 	if (g_failures) {
 		printf("RESULT: FAIL (%d check(s) failed)\n", g_failures);

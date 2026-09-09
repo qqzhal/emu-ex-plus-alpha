@@ -8,7 +8,9 @@ cd "$(dirname "$0")/../.."
 CXX="${CXX:-g++}"
 OUT="${OUT:-build-headless}"
 CXXFLAGS="-std=c++20 -O1 -g -w -DHAVE_ASPRINTF -DPSS_STYLE=1 -DLSB_FIRST -DFRAMESKIP"
-INC="-INES.emu/src -INES.emu/src/fceu -INES.emu/src/fceu/boards"
+# stub-include shadows the real emuframework headers so ppu.cpp builds
+# without the imagine front-end; it must come before the real include dirs.
+INC="-INES.emu/headless-test/stub-include -INES.emu/src -INES.emu/src/fceu -INES.emu/src/fceu/boards"
 
 mkdir -p "$OUT"
 
@@ -25,6 +27,8 @@ NES.emu/src/fceu/ines.cpp
 NES.emu/src/fceu/cart.cpp
 NES.emu/src/fceu/file.cpp
 NES.emu/src/fceu/emufile.cpp
+NES.emu/src/fceu/x6502.cpp
+NES.emu/src/fceu/ppu.cpp
 NES.emu/src/fceu/utils/crc32.cpp
 NES.emu/src/fceu/utils/md5.cpp
 NES.emu/src/fceu/utils/memory.cpp

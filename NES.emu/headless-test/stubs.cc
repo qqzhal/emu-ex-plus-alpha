@@ -65,7 +65,6 @@ void SetWriteHandler(int32 start, int32 end, writefunc func) {
 }
 
 // ---- globals owned by ppu.cpp / x6502.cpp ----
-int scanline = 0;
 uint32 timestamp = 0;
 uint32 soundtimestamp = 0;
 uint8 PPU[4];
@@ -140,9 +139,30 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1) { return std::str
 std::string curMovieFilename;
 uint64 xoroshiro128plus_next() { return 0; }
 FCEUS FSettings;
-X6502 X;
 static void MapIRQHookDummy(int a) {}
 void (*MapIRQHook)(int a) = MapIRQHookDummy;
+
+// ---- front-end render/audio callbacks (main/Main.cc in the real app) ----
+void FCEUPPU_FrameReady(EmuEx::EmuSystemTaskContext, EmuEx::NesSystem&, EmuEx::EmuVideo*, uint8*) {}
+namespace EmuEx {
+void emulateSound(EmuAudio *audio) {}
+}
+
+// ---- sound.cpp entry points referenced by ppu.cpp (sound.cpp not built) ----
+void FCEUSND_Power() {}
+void SetNESDeemph_OldHacky(int which, int force) {}
+int DMC_7bit = 0;
+int skip_7bit_overclocking = 1;
+int overclock_enabled = 0;
+int dendy = 0;
+
+// ---- input.cpp entry point (input.cpp not built) ----
+void FCEU_UpdateInput() {}
+
+// ---- palette driver ----
+void FCEUD_GetPalette(uint8 i, uint8 *r, uint8 *g, uint8 *b) {
+	*r = *g = *b = i;
+}
 
 // ---- front-end input hooks (main/input.cc in the real app) ----
 void GetMouseData(uint32 (&d)[3]) { d[0] = d[1] = d[2] = 0; }
