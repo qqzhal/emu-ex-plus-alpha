@@ -32,6 +32,9 @@ jobs:
         sudo apt-get install -y --no-install-recommends autoconf automake autopoint bash gcc-arm-linux-gnueabi file gawk gettext git libtool libtool-bin make nasm pkg-config unzip wget
     - name: Install Latest CMake
       uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: '4.1.1'
+        ninjaVersion: 'latest'
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -85,6 +88,9 @@ jobs:
         sudo apt-get install -y --no-install-recommends autoconf automake autopoint bash gcc-arm-linux-gnueabi file gawk gettext git libtool libtool-bin make nasm pkg-config unzip wget
     - name: Install Latest CMake
       uses: lukka/get-cmake@latest
+      with:
+        cmakeVersion: '4.1.1'
+        ninjaVersion: 'latest'
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
