@@ -161,6 +161,15 @@ uint8 PAL = 0;
 static uint8 RAMBuf[0x800];
 uint8 *RAM = RAMBuf;
 
+// ---- video.cpp frame buffers (video.cpp not built) ----
+static uint8 XBufBuf[256 * 240];
+uint8 *XBuf = XBufBuf;
+static uint8 XDBufBuf[256 * 240];
+uint8 *XDBuf = XDBufBuf;
+bool overclocking = false;
+bool paldeemphswap = false;
+int debug_loggingCD = 0;
+
 // ---- movie.cpp globals referenced by ppu.cpp/fceu.cpp ----
 int StackAddrBackup = -1;
 
