@@ -139,6 +139,10 @@ void FlushGenieRW(void) {}
 std::string FCEU_MakeFName(int type, int id1, const char *cd1) { return std::string(); }
 std::string curMovieFilename;
 uint64 xoroshiro128plus_next() { return 0; }
+FCEUS FSettings;
+X6502 X;
+static void MapIRQHookDummy(int a) {}
+void (*MapIRQHook)(int a) = MapIRQHookDummy;
 
 // ---- front-end input hooks (main/input.cc in the real app) ----
 void GetMouseData(uint32 (&d)[3]) { d[0] = d[1] = d[2] = 0; }
