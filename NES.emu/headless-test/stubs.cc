@@ -184,11 +184,6 @@ bool HeadlessHasExState(const char *tag) {
 	return false;
 }
 
-// ---- cart.cpp's save helpers live elsewhere in the real app ----
-void FCEU_SaveGameSave(CartInfo *LocalHWInfo) {}
-void FCEU_ClearGameSave(CartInfo *LocalHWInfo) {}
-void FCEU_LoadGameSave(CartInfo *LocalHWInfo) {}
-
 // ---- palette.cpp / video ----
 void FCEUI_SetVidSystem(int system) {}
 
@@ -273,4 +268,3 @@ void FCEU_KillVirtualVideo(void) {}
 void FCEU_ResetMessages(void) {}
 void FCEU_PutImageDummy(void) {}
 void FCEU_PutImage(void) {}
-void GetFileBase(const char *horta) {}
