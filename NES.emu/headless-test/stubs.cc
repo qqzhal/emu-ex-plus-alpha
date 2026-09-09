@@ -15,6 +15,7 @@
 #include "fceu/state.h"
 #include "fceu/x6502.h"
 #include "fceu/ppu.h"
+#include "fceu/sound.h"
 #include "fceu/unif.h"
 #include "fceu/cheat.h"
 #include "fceu/input.h"
