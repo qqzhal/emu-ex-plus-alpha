@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+#include "emuframework/EmuApp.hh" // stub header with minimal EmuEx types
+
 #include "fceu/types.h"
 #include "fceu/fceu.h"
 #include "fceu/git.h"
