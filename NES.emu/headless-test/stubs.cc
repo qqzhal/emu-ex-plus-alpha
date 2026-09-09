@@ -157,7 +157,7 @@ bool DMC_7bit = false;
 bool skip_7bit_overclocking = true;
 bool overclock_enabled = false;
 int dendy = 0;
-int PAL = 0;
+uint8 PAL = 0;
 static uint8 RAMBuf[0x800];
 uint8 *RAM = RAMBuf;
 
