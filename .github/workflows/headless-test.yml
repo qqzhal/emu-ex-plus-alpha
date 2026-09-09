@@ -15,5 +15,7 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
+    - name: Install zlib dev
+      run: sudo apt-get update && sudo apt-get install -y zlib1g-dev
     - name: Build and run
       run: bash NES.emu/headless-test/build.sh

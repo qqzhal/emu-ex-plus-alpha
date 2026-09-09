@@ -13,7 +13,7 @@ INC="-INES.emu/src -INES.emu/src/fceu -INES.emu/src/fceu/boards"
 mkdir -p "$OUT"
 
 OBJS=()
-for src in NES.emu/src/fceu/boards/*.cpp; do
+for src in NES.emu/src/fceu/boards/*.cpp NES.emu/src/fceu/boards/*.c; do
 	obj="$OUT/$(echo "$src" | tr '/' '_').o"
 	echo "CXX $src"
 	$CXX $CXXFLAGS $INC -c "$src" -o "$obj"
@@ -43,7 +43,7 @@ for src in $SRCS; do
 done
 
 echo "LINK $OUT/headless-test"
-$CXX "${OBJs[@]}" -o "$OUT/headless-test"
+$CXX "${OBJs[@]}" -lz -o "$OUT/headless-test"
 
 cd "$OUT"
 ./headless-test

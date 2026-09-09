@@ -92,6 +92,57 @@ SFORMAT FCEUVSUNI_STATEINFO[] = {
 	{ 0 }
 };
 
+// ---- ppu.cpp globals (ppu.cpp is not built here: it depends on the
+// imagine/EmuFramework render front-end) ----
+uint8 PALRAM[0x20];
+uint8 UPALRAM[3];
+uint8 NTARAM[0x800];
+uint8 *vnapage[4];
+uint8 PPUNTARAM = 0;
+uint32 NTRefreshAddr = 0;
+void (*PPU_hook)(uint32 A) = nullptr;
+uint8 (FASTCALL *FFCEUX_PPURead)(uint32 A) = nullptr;
+void (*FFCEUX_PPUWrite)(uint32 A, uint8 V) = nullptr;
+void PPU_ResetHooks() {}
+int newppu = 0;
+int newppu_get_scanline() { return 0; }
+int newppu_get_dot() { return 0; }
+PPUPHASE ppuphase = PPUPHASE_VBL;
+int fceuindbg = 0;
+int PEC586Hack = 0;
+int QTAIHack = 0;
+uint8 qtaintramreg = 0;
+int MMC5Hack = 0;
+uint8 MMC5HackCHRMode = 0;
+uint32 MMC5HackVROMMask = 0;
+uint8 *MMC5HackExNTARAMPtr = nullptr;
+uint8 *MMC5HackVROMPTR = nullptr;
+uint8 MMC5HackSPMode = 0;
+uint8 MMC5HackSPScroll = 0;
+uint8 MMC5HackSPPage = 0;
+uint8 MMC50x5130 = 0;
+uint8 *FCEUPPU_GetCHR(uint32 vadr, uint32 refreshaddr) { return nullptr; }
+void FCEUPPU_LineUpdate() {}
+
+// ---- sound.cpp globals (not built here) ----
+EXPSOUND GameExpSound = { nullptr, nullptr, nullptr, nullptr, nullptr };
+int32 nesincsize = 0;
+int32 Wave[2048 + 512];
+int32 WaveHi[40000];
+uint32 soundtsinc = 0;
+uint32 soundtsoffs = 0;
+
+// ---- fceu.cpp / movie.cpp / RNG ----
+int AllocGenieRW(void) { return 0; }
+void FlushGenieRW(void) {}
+std::string FCEU_MakeFName(int type, int id1, const char *cd1) { return std::string(); }
+std::string curMovieFilename;
+uint64 xoroshiro128plus_next() { return 0; }
+
+// ---- front-end input hooks (main/input.cc in the real app) ----
+void GetMouseData(uint32 (&d)[3]) { d[0] = d[1] = d[2] = 0; }
+int GetKeyboard() { return 0; }
+
 // ---- cheat.cpp ----
 void FCEU_CheatAddRAM(int s, uint32 A, uint8 *p) {}
 
