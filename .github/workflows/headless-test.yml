@@ -1,0 +1,19 @@
+name: NES.emu mapper195 headless test
+
+on:
+  push:
+    paths:
+      - 'NES.emu/**'
+      - '.github/workflows/headless-test.yml'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: mapper195 headless acceptance test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Build and run
+      run: bash NES.emu/headless-test/build.sh
