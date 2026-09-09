@@ -12,12 +12,19 @@ INC="-INES.emu/src -INES.emu/src/fceu -INES.emu/src/fceu/boards"
 
 mkdir -p "$OUT"
 
+OBJS=()
+for src in NES.emu/src/fceu/boards/*.cpp; do
+	obj="$OUT/$(echo "$src" | tr '/' '_').o"
+	echo "CXX $src"
+	$CXX $CXXFLAGS $INC -c "$src" -o "$obj"
+	OBJs+=("$obj")
+done
+
 SRCS="
 NES.emu/src/fceu/ines.cpp
 NES.emu/src/fceu/cart.cpp
 NES.emu/src/fceu/file.cpp
 NES.emu/src/fceu/emufile.cpp
-NES.emu/src/fceu/boards/mmc3.cpp
 NES.emu/src/fceu/utils/crc32.cpp
 NES.emu/src/fceu/utils/md5.cpp
 NES.emu/src/fceu/utils/memory.cpp
@@ -28,7 +35,6 @@ NES.emu/headless-test/stubs.cc
 NES.emu/headless-test/main.cc
 "
 
-OBJS=()
 for src in $SRCS; do
 	obj="$OUT/$(echo "$src" | tr '/' '_').o"
 	echo "CXX $src"

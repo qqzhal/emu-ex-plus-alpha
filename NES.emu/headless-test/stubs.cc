@@ -76,6 +76,22 @@ void (*GameHBIRQHook2)(void) = nullptr;
 void X6502_IRQBegin(int w) {}
 void X6502_IRQEnd(int w) {}
 
+// ---- x6502.cpp debug hooks ----
+uint8 X6502_DMR(uint32 A) { return 0xFF; }
+void X6502_DMW(uint32 A, uint8 V) {}
+
+// ---- fceu.cpp ----
+int eoptions = 0;
+
+void FCEU_MemoryRand(uint8 *ptr, uint32 size, bool default_zero) {
+	memset(ptr, default_zero ? 0x00 : 0xFF, size);
+}
+
+// ---- vsuni.cpp ----
+SFORMAT FCEUVSUNI_STATEINFO[] = {
+	{ 0 }
+};
+
 // ---- cheat.cpp ----
 void FCEU_CheatAddRAM(int s, uint32 A, uint8 *p) {}
 
