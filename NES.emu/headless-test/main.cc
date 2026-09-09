@@ -27,6 +27,9 @@
 #include "fceu/file.h"
 #include "fceu/ppu.h"
 
+// declared in fceu.cpp / defined in ines.cpp (static there, no header)
+int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode);
+
 bool HeadlessHasExState(const char *tag);
 
 static int g_failures = 0;
@@ -140,9 +143,9 @@ static void runCase(const char *path, int prg16k, const std::vector<uint8> &prg,
 	}
 	CHECK(chrIntact, "VROM holds real CHR data (not_power2 list kept 195)");
 
-	// --- power up the board ---
+	// --- power up the board (NES.emu's CartInfo::Power takes no args) ---
 	if (currCartInfo->Power)
-		currCartInfo->Power(currCartInfo);
+		currCartInfo->Power();
 	else {
 		printf("  [FAIL] no Power handler registered\n");
 		g_failures++;
