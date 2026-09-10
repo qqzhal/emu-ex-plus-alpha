@@ -152,7 +152,7 @@ FrameTimingView::FrameTimingView(ViewAttachParams attach):
 			if(app().emuWindow().supportsFrameClockSource(FrameClockSource::Screen))
 				frameClockItems.emplace_back("屏幕(用于标准显示器)", attach, MenuItem::Config{.id = FrameClockSource::Screen});
 			if(app().emuWindow().supportsFrameClockSource(FrameClockSource::Renderer))
-				frameClockItems.emplace_back("Renderer (For drivers with double buffering)", attach, MenuItem::Config{.id = FrameClockSource::Renderer});
+				frameClockItems.emplace_back("渲染器（双缓冲驱动用）", attach, MenuItem::Config{.id = FrameClockSource::Renderer});
 			frameClockItems.emplace_back("定时器(用于可变刷新率显示器)", attach, MenuItem::Config{.id = FrameClockSource::Timer});
 			return frameClockItems;
 		}()

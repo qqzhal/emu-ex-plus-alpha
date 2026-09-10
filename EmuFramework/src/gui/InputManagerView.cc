@@ -320,7 +320,7 @@ InputManagerOptionsView::InputManagerOptionsView(ViewAttachParams attach):
 	},
 	btScanSecs
 	{
-		"Scan Time", attach,
+		"扫描时长", attach,
 		MenuId{app().bluetoothAdapter.scanSecs},
 		btScanSecsItem,
 		MultiChoiceMenuItem::Config
@@ -330,7 +330,7 @@ InputManagerOptionsView::InputManagerOptionsView(ViewAttachParams attach):
 	},
 	btScanCache
 	{
-		"Cache Scan Results", attach,
+		"缓存扫描结果", attach,
 		app().bluetoothAdapter.useScanCache,
 		[this](BoolMenuItem &item)
 		{

@@ -173,7 +173,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	{
 		"默认菜单", attach,
 		app().systemActionsIsDefaultMenu,
-		"最后使用", "System Actions",
+		"最后使用", "系统动作",
 		[this](BoolMenuItem &item)
 		{
 			app().systemActionsIsDefaultMenu = item.flipBoolValue(*this);
@@ -235,7 +235,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	menuOrientation
 	{
-		"In Menu", attach,
+		"菜单画面", attach,
 		MenuId{uint8_t(app().menuOrientation.value())},
 		menuOrientationItem,
 		{
@@ -270,7 +270,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	setWindowSize
 	{
-		"Set Window Size", attach,
+		"设置窗口大小", attach,
 		[this](const Input::Event &e)
 		{
 			pushAndShowNewCollectValuePairRangeInputView<int, 320, 8192, 240, 8192>(attachParams(), e,
@@ -284,7 +284,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	toggleFullScreen
 	{
-		"Toggle Full Screen", attach,
+		"切换全屏", attach,
 		[this]{ app().emuWindow().toggleFullScreen(); }
 	}
 {

@@ -76,7 +76,7 @@ MainMenuView::MainMenuView(ViewAttachParams attach, bool customMenu):
 	},
 	systemActions
 	{
-		"System Actions", attach,
+		"系统动作", attach,
 		[this](const Input::Event &e)
 		{
 			if(!system().hasContent())
@@ -97,7 +97,7 @@ MainMenuView::MainMenuView(ViewAttachParams attach, bool customMenu):
 	},
 	bundledGames
 	{
-		"Bundled Content", attach,
+		"附加游戏", attach,
 		[this](const Input::Event &e)
 		{
 			pushAndShow(makeView<BundledGamesView>(), e);
@@ -178,13 +178,13 @@ MainMenuView::MainMenuView(ViewAttachParams attach, bool customMenu):
 	},
 	acceptPS3ControllerConnection
 	{
-		"Scan for PS3 Controller", attach,
+		"扫描PS3手柄", attach,
 		[this](const Input::Event &e)
 		{
 			app().bluetoothAdapter.openDefault();
 			if(app().bluetoothAdapter.isOpen())
 			{
-				app().postMessage(4, "Prepare to push the PS button");
+				app().postMessage(4, "请准备按下PS键");
 				auto startedScan = Bluetooth::listenForDevices(appContext(), app().bluetoothAdapter,
 					[this](BluetoothAdapter&, BluetoothScanState status, int arg)
 					{
@@ -195,7 +195,7 @@ MainMenuView::MainMenuView(ViewAttachParams attach, bool customMenu):
 								app().postErrorMessage(Config::envIsLinux ? 8 : 2,
 									Config::envIsLinux ?
 										"Unable to register server, make sure this executable has cap_net_bind_service enabled and bluetoothd isn't running" :
-										"Bluetooth setup failed");
+										"蓝牙设置失败");
 								break;
 							}
 							case BluetoothScanState::Complete:
@@ -290,7 +290,7 @@ static void onScanStatus(EmuApp &app, BluetoothScanState status, int arg)
 		case BluetoothScanState::Cancelled: break;
 		/*case BluetoothScanState::SocketOpenFailed:
 		{
-			app.postErrorMessage("Failed opening a Bluetooth connection");
+			app.postErrorMessage("蓝牙连接建立失败");
 		}*/
 	}
 };

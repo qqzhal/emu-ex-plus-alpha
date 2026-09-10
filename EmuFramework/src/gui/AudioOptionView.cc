@@ -127,7 +127,7 @@ AudioOptionView::AudioOptionView(ViewAttachParams attach, EmuAudio& audio_, bool
 	},
 	audioRate
 	{
-		"Sound Rate", attach,
+		"声音采样率", attach,
 		MenuId{audio_.rate()},
 		audioRateItem
 	},

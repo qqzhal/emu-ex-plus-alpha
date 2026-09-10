@@ -74,7 +74,7 @@ public:
 		},
 		selectFile
 		{
-			mode == DataPathSelectMode::File ? "选择文件" : "Select Archive File", attach,
+			mode == DataPathSelectMode::File ? "选择文件" : "选择压缩包文件", attach,
 			[=](View &view, const Input::Event &e)
 			{
 				auto &thisView = asThis(view);

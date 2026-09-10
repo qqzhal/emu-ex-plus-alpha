@@ -388,7 +388,7 @@ EditCheatsView::EditCheatsView(ViewAttachParams attach, CheatsView& cheatsView):
 	addRAM
 	{
 		"添加内存补丁", attachParams(),
-		[this](const Input::Event& e) { addNewCheat("Input RAM Address Hex", e, 0); }
+		[this](const Input::Event& e) { addNewCheat("输入RAM十六进制地址", e, 0); }
 	} {}
 
 }

@@ -144,7 +144,7 @@ void ManageAutosavesView::updateItem(std::string_view name, std::string_view new
 }
 
 AutosaveSlotView::AutosaveSlotView(ViewAttachParams attach):
-	TableView{"Autosave Slot", attach, menuItems},
+	TableView{"自动存档", attach, menuItems},
 	newSlot
 	{
 		"创建新的存档", attach, [this](const Input::Event &e)

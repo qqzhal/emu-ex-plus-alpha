@@ -45,9 +45,9 @@ static constexpr const char *effectName(ImageEffectId id)
 		case ImageEffectId::DIRECT: return "Direct";
 		case ImageEffectId::HQ2X: return "HQ2X";
 		case ImageEffectId::SCALE2X: return "Scale2X";
-		case ImageEffectId::PRESCALE2X: return "Prescale 2X";
-		case ImageEffectId::PRESCALE3X: return "Prescale 3X";
-		case ImageEffectId::PRESCALE4X: return "Prescale 4X";
+		case ImageEffectId::PRESCALE2X: return "预缩放2倍";
+		case ImageEffectId::PRESCALE3X: return "预缩放3倍";
+		case ImageEffectId::PRESCALE4X: return "预缩放4倍";
 	}
 	return nullptr;
 }

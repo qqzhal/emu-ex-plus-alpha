@@ -34,7 +34,7 @@ public:
 	CheatsView(ViewAttachParams attach):
 		TableView
 		{
-			"Cheats",
+			"秘籍",
 			attach,
 			[this](ItemMessage msg) -> ItemReply
 			{
@@ -96,7 +96,7 @@ public:
 	BaseEditCheatsView(ViewAttachParams attach, CheatsView& cheatsView, TableView::ItemSourceDelegate itemSrc):
 		TableView
 		{
-			"Edit Cheats",
+			"编辑秘籍",
 			attach,
 			itemSrc
 		},

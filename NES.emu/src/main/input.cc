@@ -254,10 +254,10 @@ void NesSystem::handleInputAction(EmuApp *app, InputAction a)
 			{
 				switch(side)
 				{
-					case 0: return "Disk 1 Side A";
-					case 1: return "Disk 1 Side B";
-					case 2: return "Disk 2 Side A";
-					case 3: return "Disk 2 Side B";
+					case 0: return "磁盘1 A面";
+					case 1: return "磁盘1 B面";
+					case 2: return "磁盘2 A面";
+					case 3: return "磁盘2 B面";
 				}
 				std::unreachable();
 			};

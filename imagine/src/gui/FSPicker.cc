@@ -338,7 +338,7 @@ void FSPicker::pushFileLocationsView(const Input::Event &e)
 	public:
 		FileLocationsTextTableView(ViewAttachParams attach,
 			std::vector<FS::PathLocation> locations, size_t customItems):
-				TextTableView{"File Locations", attach, locations.size() + customItems},
+				TextTableView{"文件位置", attach, locations.size() + customItems},
 				locations_{std::move(locations)} {}
 		const std::vector<FS::PathLocation> &locations() const { return locations_; }
 
@@ -390,7 +390,7 @@ void FSPicker::pushFileLocationsView(const Input::Event &e)
 	}
 	if(Config::envIsLinux)
 	{
-		view->appendItem("Root Filesystem",
+		view->appendItem("根目录",
 			[this](View& view, const Input::Event& e)
 			{
 				changeDirByInput("/", {}, e, DepthMode::reset);

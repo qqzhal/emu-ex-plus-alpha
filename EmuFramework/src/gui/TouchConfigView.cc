@@ -377,7 +377,7 @@ class ButtonGroupElementConfigView : public TableView, public EmuAppHelper
 {
 public:
 	ButtonGroupElementConfigView(ViewAttachParams attach, TouchConfigView &confView_, VController &vCtrl_, VControllerElement &elem_):
-		TableView{"Edit Buttons", attach, item},
+		TableView{"编辑按键", attach, item},
 		vCtrl{vCtrl_},
 		elem{elem_},
 		confView{confView_},
@@ -989,7 +989,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	devButtonsHeading
 	{
-		"Emulator Button Groups", attach
+		"模拟器按键组合", attach
 	},
 	uiButtonsHeading
 	{
