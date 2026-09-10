@@ -532,26 +532,25 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 				continue;
 			auto addrS = trim(seg.substr(0, c1));
 			auto rest = seg.substr(c1 + 1);
-			auto c2 = rest.find(',');
-			auto valS = trim(c2 == std::string_view::npos ? rest : rest.substr(0, c2));
-			if(addrS.empty() || valS.empty())
+			if(addrS.empty())
 				continue;
 			unsigned addr = hexVal(addrS);
 			if(addr > 0xFFFF)
 				continue;
-			auto val = hexVal(valS);
-			if(c2 == std::string_view::npos)
+			// 首段为起始地址, 其余每段依次写连续地址 (addr, addr+1, addr+2, ...),
+			// 段数可变; 恒为无条件写 (该格式无比较值语义)
+			std::string_view byteSeg = rest;
+			unsigned cur = addr;
+			while(!byteSeg.empty())
 			{
-				// 两段: 单字节无条件写
-				e.codes.emplace_back(addr, val, -1, 0);
-			}
-			else
-			{
-				// 三段: 16 位值按小端写两个连续字节 (addr=低字节, addr+1=高字节)
-				auto valHi = hexVal(trim(rest.substr(c2 + 1)));
-				e.codes.emplace_back(addr, val, -1, 0);
-				if(addr < 0xFFFF)
-					e.codes.emplace_back(addr + 1, valHi, -1, 0);
+				auto comma = byteSeg.find(',');
+				auto byteS = trim(comma == std::string_view::npos ? byteSeg : byteSeg.substr(0, comma));
+				if(!byteS.empty() && cur <= 0xFFFF)
+					e.codes.emplace_back(cur, hexVal(byteS), -1, 0);
+				if(comma == std::string_view::npos)
+					break;
+				byteSeg = byteSeg.substr(comma + 1);
+				cur++;
 			}
 		}
 		if(!e.codes.empty())
