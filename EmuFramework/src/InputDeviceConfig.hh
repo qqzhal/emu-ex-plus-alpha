@@ -50,7 +50,7 @@ public:
 	{
 		if(sessionSavedConf)
 			return sessionSavedConf->keyConfName;
-		else return "Default";
+		else return "默认";
 	}
 	void setSessionKeyConfName(InputManager&, std::string_view name);
 	KeyConfig *mutableKeyConf(InputManager&) const;

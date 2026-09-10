@@ -13,7 +13,7 @@
 	You should have received a copy of the GNU General Public License
 	along with Imagine.  If not, see <http://www.gnu.org/licenses/> */
 
-#define LOGTAG "Vibration"
+#define LOGTAG "振动"
 #include <imagine/base/ApplicationContext.hh>
 #include <imagine/base/VibrationManager.hh>
 #include <imagine/logger/logger.h>

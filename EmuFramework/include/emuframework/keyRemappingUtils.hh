@@ -156,11 +156,11 @@ constexpr std::span<const KeyConfigDesc> genericKeyConfigs()
 
 	static constexpr std::array configs
 	{
-		KeyConfigDesc{Map::SYSTEM, "PC Keyboard", pcKeyboardMap},
+		KeyConfigDesc{Map::SYSTEM, "PC键盘", pcKeyboardMap},
 		#ifdef CONFIG_INPUT_GAMEPAD_DEVICES
-		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::GENERIC_GAMEPAD, "Generic Gamepad", genericGamepadMap},
-		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::PS3_CONTROLLER, "PS3 Controller", ps3GamepadMap},
-		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::OUYA_CONTROLLER, "OUYA Controller", ouyaGamepadMap},
+		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::GENERIC_GAMEPAD, "常规手柄", genericGamepadMap},
+		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::PS3_CONTROLLER, "PS3控制器", ps3GamepadMap},
+		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::OUYA_CONTROLLER, "OUYA控制器", ouyaGamepadMap},
 		#endif
 		#if defined(__ANDROID__) && __ARM_ARCH == 7
 		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::XPERIA_PLAY, "Xperia Play", xperiaPlayGamepadMap},
@@ -169,16 +169,16 @@ constexpr std::span<const KeyConfigDesc> genericKeyConfigs()
 		KeyConfigDesc{Map::SYSTEM, DeviceSubtype::PANDORA_HANDHELD, "Pandora Keys", pandoraKeysMap},
 		#endif
 		#ifdef CONFIG_INPUT_APPLE_GAME_CONTROLLER
-		KeyConfigDesc{Map::APPLE_GAME_CONTROLLER, "Default", appleGamepadMap},
+		KeyConfigDesc{Map::APPLE_GAME_CONTROLLER, "默认", appleGamepadMap},
 		#endif
 		#ifdef CONFIG_INPUT_BLUETOOTH
-		KeyConfigDesc{Map::WIIMOTE, "Default", wiimoteMap},
-		KeyConfigDesc{Map::WII_CC, "Default", genericGamepadMap},
-		KeyConfigDesc{Map::ICONTROLPAD, "Default", genericGamepadMap},
-		KeyConfigDesc{Map::ZEEMOTE, "Default", wiimoteMap},
+		KeyConfigDesc{Map::WIIMOTE, "默认", wiimoteMap},
+		KeyConfigDesc{Map::WII_CC, "默认", genericGamepadMap},
+		KeyConfigDesc{Map::ICONTROLPAD, "默认", genericGamepadMap},
+		KeyConfigDesc{Map::ZEEMOTE, "默认", wiimoteMap},
 		#endif
 		#ifdef CONFIG_BLUETOOTH_SERVER
-		KeyConfigDesc{Map::PS3PAD, "Default", genericGamepadMap},
+		KeyConfigDesc{Map::PS3PAD, "默认", genericGamepadMap},
 		#endif
 	};
 	return configs;

@@ -35,12 +35,12 @@ namespace EmuEx
 
 constexpr const char *ctrlStateStr[]
 {
-	"Off", "On", "Hidden"
+	"关", "开", "隐藏"
 };
 
 constexpr const char *touchCtrlExtraBtnSizeMenuName[4]
 {
-	"None", "10%", "20%", "30%"
+	"无", "10%", "20%", "30%"
 };
 
 constexpr int touchCtrlExtraBtnSizeMenuVal[4]
@@ -67,7 +67,7 @@ class DPadElementConfigView : public TableView, public EmuAppHelper
 {
 public:
 	DPadElementConfigView(ViewAttachParams attach, TouchConfigView &confView_, VController &vCtrl_, VControllerElement &elem_):
-		TableView{"Edit D-Pad", attach, item},
+		TableView{"编辑十字键", attach, item},
 		vCtrl{vCtrl_},
 		elem{elem_},
 		confView{confView_},
@@ -76,10 +76,10 @@ public:
 			{"1mm",    attach, {.id = 100}},
 			{"1.35mm", attach, {.id = 135}},
 			{"1.6mm",  attach, {.id = 160}},
-			{"Custom Value", attach,
+			{"自定义", attach,
 				[this](const Input::Event &e)
 				{
-					pushAndShowNewCollectValueRangeInputView<float, 1, 3>(attachParams(), e, "Input 1.0 to 3.0", "",
+					pushAndShowNewCollectValueRangeInputView<float, 1, 3>(attachParams(), e, "输入1.0到3.0之间的值", "",
 						[this](CollectTextInputView &, auto val)
 						{
 							int scaledIntVal = val * 100.0;
@@ -94,7 +94,7 @@ public:
 		},
 		deadzone
 		{
-			"Deadzone", attach,
+			"盲区", attach,
 			MenuId{elem.dPad()->deadzone()},
 			deadzoneItems,
 			{
@@ -108,15 +108,15 @@ public:
 		},
 		diagonalSensitivityItems
 		{
-			{"None",             attach, {.id = 1000}},
-			{"33% (Low)",        attach, {.id = 667}},
-			{"43% (Medium-Low)", attach, {.id = 570}},
-			{"50% (Medium)",     attach, {.id = 500}},
-			{"60% (High)",       attach, {.id = 400}},
-			{"Custom Value", attach,
+			{"无",             attach, {.id = 1000}},
+			{"33% (低)",        attach, {.id = 667}},
+			{"43% (中低)", attach, {.id = 570}},
+			{"50% (中等)",     attach, {.id = 500}},
+			{"60% (高)",       attach, {.id = 400}},
+			{"自定义", attach,
 				[this](const Input::Event &e)
 				{
-					pushAndShowNewCollectValueRangeInputView<float, 0, 99>(attachParams(), e, "Input 0 to 99.0", "",
+					pushAndShowNewCollectValueRangeInputView<float, 0, 99>(attachParams(), e, "输入0到99.0之间的值", "",
 						[this](CollectTextInputView &, auto val)
 						{
 							val = 100. - val;
@@ -133,7 +133,7 @@ public:
 		},
 		diagonalSensitivity
 		{
-			"Diagonal Sensitivity", attach,
+			"对角线灵敏度", attach,
 			MenuId{elem.dPad()->diagonalSensitivity() * 1000.f},
 			diagonalSensitivityItems,
 			{
@@ -153,7 +153,7 @@ public:
 		},
 		state
 		{
-			"State", attach,
+			"状态", attach,
 			MenuId{elem.state},
 			stateItems,
 			{
@@ -166,7 +166,7 @@ public:
 		},
 		showBoundingArea
 		{
-			"Show Bounding Area", attach,
+			"显示边界区域", attach,
 			elem.dPad()->showBounds(),
 			[this](BoolMenuItem &item)
 			{
@@ -177,10 +177,10 @@ public:
 		},
 		remove
 		{
-			"Remove This D-Pad", attach,
+			"移除此十字键", attach,
 			[this](const Input::Event &e)
 			{
-				pushAndShowModal(makeView<YesNoAlertView>("Really remove this d-pad?",
+				pushAndShowModal(makeView<YesNoAlertView>("确定移除此十字键?",
 					YesNoAlertView::Delegates
 					{
 						.onYes = [this]
@@ -193,7 +193,7 @@ public:
 					}), e);
 			}
 		},
-		actionsHeading{"D-Pad Actions", attach},
+		actionsHeading{"十字键动作", attach},
 		actions
 		{
 			{
@@ -244,7 +244,7 @@ private:
 
 	void assignAction(int idx, const Input::Event &e)
 	{
-		auto multiChoiceView = makeViewWithName<TextTableView>("Assign Action", 16);
+		auto multiChoiceView = makeViewWithName<TextTableView>("分配动作", 16);
 		auto &app = this->app();
 		addCategories(app, elem, [&](const KeyCategory &cat)
 		{
@@ -269,7 +269,7 @@ public:
 	using OnChange = DelegateFunc<void()>;
 
 	ButtonElementConfigView(ViewAttachParams attach, OnChange onChange_, VController &vCtrl_, VControllerElement &elem_, VControllerButton &btn_):
-		TableView{"Edit Button", attach, item},
+		TableView{"编辑按键", attach, item},
 		vCtrl{vCtrl_},
 		elem{elem_},
 		btn{btn_},
@@ -279,7 +279,7 @@ public:
 			"Action", app().inputManager.toString(btn_.key), attach,
 			[this](const Input::Event &e)
 			{
-				auto multiChoiceView = makeViewWithName<TextTableView>("Assign Action", 16);
+				auto multiChoiceView = makeViewWithName<TextTableView>("分配动作", 16);
 				auto &app = this->app();
 				addCategories(app, elem, [&](const KeyCategory &cat)
 				{
@@ -305,7 +305,7 @@ public:
 		},
 		turbo
 		{
-			"Turbo", attach,
+			"连发", attach,
 			bool(btn_.key.flags.turbo),
 			[this](BoolMenuItem &item)
 			{
@@ -329,10 +329,10 @@ public:
 		},
 		remove
 		{
-			"Remove This Button", attach,
+			"移除此按键", attach,
 			[this](const Input::Event &e)
 			{
-				pushAndShowModal(makeView<YesNoAlertView>("Really remove this button?",
+				pushAndShowModal(makeView<YesNoAlertView>("确定移除此按键?",
 					YesNoAlertView::Delegates
 					{
 						.onYes = [this]
@@ -389,7 +389,7 @@ public:
 		},
 		state
 		{
-			"State", attach,
+			"状态", attach,
 			MenuId{elem.state},
 			stateItems,
 			{
@@ -410,7 +410,7 @@ public:
 		},
 		rowSize
 		{
-			"Buttons Per Row", attach,
+			"每行按键数目", attach,
 			MenuId{elem.rowSize()},
 			rowSizeItems,
 			{
@@ -427,10 +427,10 @@ public:
 			{"2mm", attach, {.id = 2}},
 			{"3mm", attach, {.id = 3}},
 			{"4mm", attach, {.id = 4}},
-			{"Custom Value", attach,
+			{"自定义", attach,
 				[this](const Input::Event &e)
 				{
-					pushAndShowNewCollectValueRangeInputView<int, 0, 8>(attachParams(), e, "Input 0 to 8", "",
+					pushAndShowNewCollectValueRangeInputView<int, 0, 8>(attachParams(), e, "输入0到8之间的值", "",
 						[this](CollectTextInputView &, auto val)
 						{
 							elem.buttonGroup()->setSpacing(val, window());
@@ -445,7 +445,7 @@ public:
 		},
 		space
 		{
-			"Spacing", attach,
+			"按键距离", attach,
 			MenuId{elem.buttonGroup() ? elem.buttonGroup()->spacing() : 0},
 			spaceItems,
 			{
@@ -472,7 +472,7 @@ public:
 		},
 		stagger
 		{
-			"Stagger", attach,
+			"按键交错", attach,
 			MenuId{elem.buttonGroup() ? elem.buttonGroup()->stagger() : 0},
 			staggerItems,
 			{
@@ -489,9 +489,9 @@ public:
 			{touchCtrlExtraBtnSizeMenuName[1], attach, {.id = touchCtrlExtraBtnSizeMenuVal[1]}},
 			{touchCtrlExtraBtnSizeMenuName[2], attach, {.id = touchCtrlExtraBtnSizeMenuVal[2]}},
 			{touchCtrlExtraBtnSizeMenuName[3], attach, {.id = touchCtrlExtraBtnSizeMenuVal[3]}},
-			{"Custom Value", attach, [this](const Input::Event &e)
+			{"自定义", attach, [this](const Input::Event &e)
 				{
-					pushAndShowNewCollectValueRangeInputView<int, 0, 30>(attachParams(), e, "Input 0 to 30", "",
+					pushAndShowNewCollectValueRangeInputView<int, 0, 30>(attachParams(), e, "输入0到30之间的值", "",
 						[this](CollectTextInputView &, auto val)
 						{
 							elem.buttonGroup()->layout.xPadding = val;
@@ -506,7 +506,7 @@ public:
 		},
 		extraXSize
 		{
-			"Extended H Bounds", attach,
+			"扩展的H边界", attach,
 			MenuId{elem.buttonGroup() ? elem.buttonGroup()->layout.xPadding : 0},
 			extraXSizeItems,
 			{
@@ -530,9 +530,9 @@ public:
 			{touchCtrlExtraBtnSizeMenuName[1], attach, {.id = touchCtrlExtraBtnSizeMenuVal[1]}},
 			{touchCtrlExtraBtnSizeMenuName[2], attach, {.id = touchCtrlExtraBtnSizeMenuVal[2]}},
 			{touchCtrlExtraBtnSizeMenuName[3], attach, {.id = touchCtrlExtraBtnSizeMenuVal[3]}},
-			{"Custom Value", attach, [this](const Input::Event &e)
+			{"自定义", attach, [this](const Input::Event &e)
 				{
-					pushAndShowNewCollectValueRangeInputView<int, 0, 30>(attachParams(), e, "Input 0 to 30", "",
+					pushAndShowNewCollectValueRangeInputView<int, 0, 30>(attachParams(), e, "输入0到30之间的值", "",
 						[this](CollectTextInputView &, auto val)
 						{
 							elem.buttonGroup()->layout.yPadding = val;
@@ -547,7 +547,7 @@ public:
 		},
 		extraYSize
 		{
-			"Extended V Bounds", attach,
+			"扩展的V边界", attach,
 			MenuId{elem.buttonGroup() ? elem.buttonGroup()->layout.yPadding : 0},
 			extraYSizeItems,
 			{
@@ -567,7 +567,7 @@ public:
 		},
 		showBoundingArea
 		{
-			"Show Bounding Area", attach,
+			"显示边界区域", attach,
 			elem.buttonGroup() ? elem.buttonGroup()->showsBounds() : false,
 			[this](BoolMenuItem &item)
 			{
@@ -578,10 +578,10 @@ public:
 		},
 		add
 		{
-			"Add Button To This Group", attach,
+			"将按键添加到此组合", attach,
 			[this](const Input::Event &e)
 			{
-				auto multiChoiceView = makeViewWithName<TextTableView>("Add Button", 16);
+				auto multiChoiceView = makeViewWithName<TextTableView>("添加按键", 16);
 				auto &app = this->app();
 				addCategories(app, elem, [&](const KeyCategory &cat)
 				{
@@ -604,10 +604,10 @@ public:
 		},
 		remove
 		{
-			"Remove This Button Group", attach,
+			"移除此按键组合", attach,
 			[this](const Input::Event &e)
 			{
-				pushAndShowModal(makeView<YesNoAlertView>("Really remove this button group?",
+				pushAndShowModal(makeView<YesNoAlertView>("确定移除此按键组合?",
 					YesNoAlertView::Delegates
 					{
 						.onYes = [this]
@@ -620,7 +620,7 @@ public:
 					}), e);
 			}
 		},
-		buttonsHeading{"Buttons In Group", attach}
+		buttonsHeading{"按键组合", attach}
 	{
 		reloadItems();
 	}
@@ -699,7 +699,7 @@ class AddNewButtonView : public TableView, public EmuAppHelper
 {
 public:
 	AddNewButtonView(ViewAttachParams attach, TouchConfigView &confView_, VController &vCtrl_):
-		TableView{"Add New Button Group", attach, buttons},
+		TableView{"添加新按键组合", attach, buttons},
 		vCtrl{vCtrl_},
 		confView{confView_}
 	{
@@ -758,17 +758,17 @@ void TouchConfigView::refreshTouchConfigMenu()
 }
 
 TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
-	TableView{"On-screen Input Setup", attach, item},
+	TableView{"虚拟键盘设置", attach, item},
 	vController{vCtrl},
 	touchCtrlItem
 	{
-		{"Off",  attach, {.id = VControllerVisibility::OFF}},
-		{"On",   attach, {.id = VControllerVisibility::ON}},
-		{"Auto", attach, {.id = VControllerVisibility::AUTO}}
+		{"关",  attach, {.id = VControllerVisibility::OFF}},
+		{"开",   attach, {.id = VControllerVisibility::ON}},
+		{"自动", attach, {.id = VControllerVisibility::AUTO}}
 	},
 	touchCtrl
 	{
-		"Use Virtual Gamepad", attach,
+		"启用虚拟键盘", attach,
 		int(vCtrl.gamepadControlsVisibility()),
 		touchCtrlItem,
 		{
@@ -791,7 +791,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	player
 	{
-		"Virtual Gamepad Player", attach,
+		"虚拟键盘玩家", attach,
 		int(vCtrl.inputPlayer()),
 		playerItems,
 		{
@@ -810,10 +810,10 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 		{"12mm",  attach, {.id = 1200}},
 		{"14mm",  attach, {.id = 1400}},
 		{"15mm",  attach, {.id = 1500}},
-		{"Custom Value", attach,
+		{"自定义", attach,
 			[this](const Input::Event &e)
 			{
-				pushAndShowNewCollectValueRangeInputView<float, 3, 30>(attachParams(), e, "Input 3.0 to 30.0", "",
+				pushAndShowNewCollectValueRangeInputView<float, 3, 30>(attachParams(), e, "输入3.0到30.0之间的值", "",
 					[this](CollectTextInputView &, auto val)
 					{
 						int scaledIntVal = val * 100.0;
@@ -828,7 +828,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	size
 	{
-		"Button Size", attach,
+		"按键大小", attach,
 		MenuId{vController.buttonSize()},
 		sizeItem,
 		{
@@ -842,7 +842,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	vibrate
 	{
-		"Vibration", attach,
+		"振动", attach,
 		vController.vibrateOnTouchInput(),
 		[this](BoolMenuItem &item)
 		{
@@ -851,7 +851,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	showOnTouch
 	{
-		"Show Gamepad If Screen Touched", attach,
+		"触摸时显示虚拟键盘", attach,
 		vController.showOnTouchInput(),
 		[this](BoolMenuItem &item)
 		{
@@ -860,7 +860,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	highlightPushedButtons
 	{
-		"Highlight Pushed Buttons", attach,
+		"按压高亮显示", attach,
 		vController.highlightPushedButtons,
 		[this](BoolMenuItem &item)
 		{
@@ -878,7 +878,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	alpha
 	{
-		"Blend Amount", attach,
+		"透明度", attach,
 		MenuId{vController.buttonAlpha()},
 		alphaItem,
 		{
@@ -887,7 +887,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	btnPlace
 	{
-		"Set Button Positions", attach,
+		"按键布局设置", attach,
 		[this](const Input::Event &e)
 		{
 			pushAndShowModal(makeView<PlaceVControlsView>(vController), e);
@@ -895,7 +895,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	placeVideo
 	{
-		"Set Video Position", attach,
+		"设置视频位置", attach,
 		[this](const Input::Event &e)
 		{
 			if(!system().hasContent())
@@ -905,7 +905,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	addButton
 	{
-		"Add New Button Group", attach,
+		"添加新按键组合", attach,
 		[this](const Input::Event &e)
 		{
 			pushAndShow(makeView<AddNewButtonView>(*this, vController), e);
@@ -913,7 +913,7 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	allowButtonsPastContentBounds
 	{
-		"Allow Buttons In Display Cutout Area", attach,
+		"允许显示剪贴区域的按键", attach,
 		vController.allowButtonsPastContentBounds(),
 		[this](BoolMenuItem &item)
 		{
@@ -923,10 +923,10 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	resetEmuPositions
 	{
-		"Reset Emulator Button Positions", attach,
+		"重置模拟器按键位置", attach,
 		[this](const Input::Event &e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Reset buttons to default positions?",
+			pushAndShowModal(makeView<YesNoAlertView>("是否将所有按键设置恢复至默认位置?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -939,10 +939,10 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	resetEmuGroups
 	{
-		"Reset Emulator Button Groups", attach,
+		"重置模拟器按键组合", attach,
 		[this](const Input::Event &e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Reset buttons groups to default?",
+			pushAndShowModal(makeView<YesNoAlertView>("重置按键组合至默认?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -956,10 +956,10 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	resetUIPositions
 	{
-		"Reset UI Positions", attach,
+		"重置界面位置", attach,
 		[this](const Input::Event &e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Reset buttons to default positions?",
+			pushAndShowModal(makeView<YesNoAlertView>("是否将所有按键设置恢复至默认位置?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -972,10 +972,10 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	resetUIGroups
 	{
-		"Reset UI Groups", attach,
+		"重置界面组合", attach,
 		[this](const Input::Event &e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Reset buttons groups to default?",
+			pushAndShowModal(makeView<YesNoAlertView>("重置按键组合至默认?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -993,11 +993,11 @@ TouchConfigView::TouchConfigView(ViewAttachParams attach, VController &vCtrl):
 	},
 	uiButtonsHeading
 	{
-		"UI Button Groups", attach
+		"界面按键组合", attach
 	},
 	otherHeading
 	{
-		"Other Options", attach
+		"其他设置", attach
 	}
 {
 	reloadItems();

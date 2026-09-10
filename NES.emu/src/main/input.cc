@@ -87,10 +87,10 @@ std::span<const KeyCategory> NesApp::keyCategories()
 	static constexpr std::array categories
 	{
 		KeyCategory{"Gamepad", gpKeyInfo},
-		KeyCategory{"Gamepad 2", gp2KeyInfo, 1},
-		KeyCategory{"Gamepad 3", gp3KeyInfo, 2},
-		KeyCategory{"Gamepad 4", gp4KeyInfo, 3},
-		KeyCategory{"Extra Functions", exKeyInfo},
+		KeyCategory{"手柄 2", gp2KeyInfo, 1},
+		KeyCategory{"手柄 3", gp3KeyInfo, 2},
+		KeyCategory{"手柄 4", gp4KeyInfo, 3},
+		KeyCategory{"额外功能", exKeyInfo},
 	};
 	return categories;
 }
@@ -107,7 +107,7 @@ std::string_view NesApp::systemKeyCodeToString(KeyCode c)
 		case NesKey::Start: return "Start";
 		case NesKey::A: return "A";
 		case NesKey::B: return "B";
-		case NesKey::toggleDiskSide: return "Eject Disk/Switch Side";
+		case NesKey::toggleDiskSide: return "弹出磁盘/换边";
 		default: return "";
 	}
 }
@@ -244,7 +244,7 @@ void NesSystem::handleInputAction(EmuApp *app, InputAction a)
 		{
 			FCEU_FDSInsert();
 			if(app)
-				app->postMessage("Disk ejected, push again to switch side");
+				app->postMessage("磁盘弹出, 再次按下切换边");
 		}
 		else
 		{
@@ -262,7 +262,7 @@ void NesSystem::handleInputAction(EmuApp *app, InputAction a)
 				std::unreachable();
 			};
 			if(app)
-				app->postMessage(std::format("Set {}", fdsSideToString(FCEU_FDSCurrentSide())));
+				app->postMessage(std::format("设置{}", fdsSideToString(FCEU_FDSCurrentSide())));
 		}
 	}
 	else // gamepad bits
@@ -344,11 +344,11 @@ SystemInputDeviceDesc NesSystem::inputDeviceDesc(int idx) const
 	static constexpr std::array gamepadComponents
 	{
 		InputComponentDesc{"D-Pad", dpadKeyInfo, InputComponent::dPad, LB2DO},
-		InputComponentDesc{"Face Buttons", faceKeyInfo, InputComponent::button, RB2DO},
+		InputComponentDesc{"正面按键", faceKeyInfo, InputComponent::button, RB2DO},
 		InputComponentDesc{"Select", {&centerKeyInfo[0], 1}, InputComponent::button, LB2DO},
 		InputComponentDesc{"Start", {&centerKeyInfo[1], 1}, InputComponent::button, RB2DO},
 		InputComponentDesc{"Select/Start", centerKeyInfo, InputComponent::button, CB2DO, {.altConfig = true}},
-		InputComponentDesc{"P2 Start (Famicom Microphone)", p2StartKeyInfo, InputComponent::button, RB2DO, {.altConfig = true}},
+		InputComponentDesc{"P2启动(家电麦克风)", p2StartKeyInfo, InputComponent::button, RB2DO, {.altConfig = true}},
 	};
 
 	static constexpr SystemInputDeviceDesc gamepadDesc{"Gamepad", gamepadComponents};

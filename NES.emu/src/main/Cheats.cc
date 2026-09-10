@@ -87,13 +87,13 @@ bool NesSystem::addCheatCode(EmuApp& app, Cheat*& cheatPtr, CheatCodeDesc desc)
 	{
 		if(!isValidGGCodeLen(desc.str))
 		{
-			app.postMessage(true, "Invalid, must be 6 or 8 digits");
+			app.postMessage(true, "无效,必须为6位或8位");
 			return false;
 		}
 		uint16 a; uint8 v; int c;
 		if(!FCEUI_DecodeGG(desc.str, &a, &v, &c))
 		{
-			app.postMessage(true, "Error decoding code");
+			app.postMessage(true, "错误解码代码");
 			return false;
 		}
 		cheatPtr->codes.emplace_back(a, v, c, 1);
@@ -103,7 +103,7 @@ bool NesSystem::addCheatCode(EmuApp& app, Cheat*& cheatPtr, CheatCodeDesc desc)
 		auto a = parseHex(desc.str);
 		if(a > 0xFFFF)
 		{
-			app.postMessage(true, "Invalid address");
+			app.postMessage(true, "无效地址");
 			return false;
 		}
 		cheatPtr->codes.emplace_back(a, 0, -1, 0);
@@ -117,12 +117,12 @@ bool NesSystem::modifyCheatCode(EmuApp& app, Cheat&, CheatCode& c, CheatCodeDesc
 	assert(desc.flags);
 	if(!isValidGGCodeLen(desc.str))
 	{
-		app.postMessage(true, "Invalid, must be 6 or 8 digits");
+		app.postMessage(true, "无效,必须为6位或8位");
 		return false;
 	}
 	if(!FCEUI_DecodeGG(desc.str, &c.addr, &c.val, &c.compare))
 	{
-		app.postMessage(true, "Error decoding code");
+		app.postMessage(true, "错误解码代码");
 		return false;
 	}
 	syncCheats();
@@ -189,7 +189,7 @@ static std::string codeCompareToString(int compare) { return compare != -1 ? std
 EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, CheatCode& code_, EditCheatView& editCheatView_):
 	TableView
 	{
-		"Edit Memory Patch",
+		"编辑内存补丁",
 		attach,
 		[this](ItemMessage msg) -> ItemReply
 		{
@@ -220,13 +220,13 @@ EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, Cheat
 		attach,
 		[this](const Input::Event& e)
 		{
-			pushAndShowNewCollectValueInputView<const char*>(attachParams(), e, "Input 4-digit hex", std::format("{:x}", code.addr),
+			pushAndShowNewCollectValueInputView<const char*>(attachParams(), e, "输入4位16进制数值", std::format("{:x}", code.addr),
 				[this](CollectTextInputView&, auto str)
 				{
 					unsigned a = parseHex(str);
 					if(a > 0xFFFF)
 					{
-						app().postMessage(true, "Invalid input");
+						app().postMessage(true, "无效输入");
 						return false;
 					}
 					code.addr = a;
@@ -245,13 +245,13 @@ EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, Cheat
 		attach,
 		[this](const Input::Event& e)
 		{
-			pushAndShowNewCollectValueInputView<const char*>(attachParams(), e, "Input 2-digit hex", std::format("{:x}", code.val),
+			pushAndShowNewCollectValueInputView<const char*>(attachParams(), e, "输入2位16进制数值", std::format("{:x}", code.val),
 				[this](CollectTextInputView&, auto str)
 				{
 					unsigned a = parseHex(str);
 					if(a > 0xFF)
 					{
-						app().postMessage(true, "Invalid value");
+						app().postMessage(true, "无效数值");
 						return false;
 					}
 					code.val = a;
@@ -265,12 +265,12 @@ EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, Cheat
 	},
 	comp
 	{
-		"Compare",
+		"对比",
 		codeCompareToString(code_.compare),
 		attach,
 		[this](const Input::Event& e)
 		{
-			pushAndShowNewCollectValueInputView<const char*, ScanValueMode::AllowBlank>(attachParams(), e, "Input 2-digit hex or blank", codeCompareToString(code.compare),
+			pushAndShowNewCollectValueInputView<const char*, ScanValueMode::AllowBlank>(attachParams(), e, "输入2位16进制或空白", codeCompareToString(code.compare),
 				[this](CollectTextInputView &, const char *str)
 				{
 					if(strlen(str))
@@ -278,7 +278,7 @@ EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, Cheat
 						unsigned a = parseHex(str);
 						if(a > 0xFF)
 						{
-							app().postMessage(true, "Invalid value");
+							app().postMessage(true, "无效数值");
 							return true;
 						}
 						code.compare = a;
@@ -298,10 +298,10 @@ EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, Cheat
 	},
 	remove
 	{
-		"Delete", attach,
+		"删除", attach,
 		[this](const Input::Event& e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Really delete this patch?",
+			pushAndShowModal(makeView<YesNoAlertView>("确定删除此补丁?",
 				YesNoAlertView::Delegates{.onYes = [this]{ editCheatView.removeCheatCode(code); dismiss(); }}), e);
 		}
 	} {}
@@ -309,20 +309,20 @@ EditRamCheatView::EditRamCheatView(ViewAttachParams attach, Cheat& cheat_, Cheat
 EditCheatView::EditCheatView(ViewAttachParams attach, Cheat& cheat, BaseEditCheatsView& editCheatsView):
 	BaseEditCheatView
 	{
-		"Edit Cheat",
+		"编辑秘籍",
 		attach,
 		cheat,
 		editCheatsView
 	},
 	addGG
 	{
-		"Add Another Code", attach,
-		[this](const Input::Event& e) { addNewCheatCode("Input Game Genie code", e, 1); }
+		"添加其他代码", attach,
+		[this](const Input::Event& e) { addNewCheatCode("输入金手指代码", e, 1); }
 	},
 	addRAM
 	{
-		"Add Another Patch", attach,
-		[this](const Input::Event& e) { addNewCheatCode("Input RAM address hex", e, 0); }
+		"添加其他补丁", attach,
+		[this](const Input::Event& e) { addNewCheatCode("输入RAM十六进制地址", e, 0); }
 	}
 {
 	loadItems();
@@ -337,7 +337,7 @@ void EditCheatView::loadItems()
 		{
 			if(c.type)
 			{
-				pushAndShowNewCollectValueInputView<const char*, ScanValueMode::AllowBlank>(attachParams(), e, "Input Game Genie code", toGGString(c),
+				pushAndShowNewCollectValueInputView<const char*, ScanValueMode::AllowBlank>(attachParams(), e, "输入金手指代码", toGGString(c),
 					[this, &c](CollectTextInputView&, auto str) { return modifyCheatCode(c, {str, 1}); });
 			}
 			else
@@ -382,12 +382,12 @@ EditCheatsView::EditCheatsView(ViewAttachParams attach, CheatsView& cheatsView):
 	},
 	addGG
 	{
-		"Add Game Genie Code", attachParams(),
-		[this](const Input::Event& e) { addNewCheat("Input Game Genie code", e, 1); }
+		"添加金手指代码", attachParams(),
+		[this](const Input::Event& e) { addNewCheat("输入金手指代码", e, 1); }
 	},
 	addRAM
 	{
-		"Add Memory Patch", attachParams(),
+		"添加内存补丁", attachParams(),
 		[this](const Input::Event& e) { addNewCheat("Input RAM Address Hex", e, 0); }
 	} {}
 

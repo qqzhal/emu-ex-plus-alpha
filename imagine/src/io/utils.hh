@@ -11,7 +11,7 @@ inline auto asString(IOAccessHint access)
 {
 	switch(access)
 	{
-		case IOAccessHint::Normal: return "Normal";
+		case IOAccessHint::Normal: return "正常";
 		case IOAccessHint::Sequential: return "Sequential";
 		case IOAccessHint::Random: return "Random";
 		case IOAccessHint::All: return "All";
@@ -23,7 +23,7 @@ inline auto asString(IOAdvice advice)
 {
 	switch(advice)
 	{
-		case IOAdvice::Normal: return "Normal";
+		case IOAdvice::Normal: return "正常";
 		case IOAdvice::Sequential: return "Sequential";
 		case IOAdvice::Random: return "Random";
 		case IOAdvice::WillNeed: return "Will Need";

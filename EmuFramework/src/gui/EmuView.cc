@@ -134,13 +134,13 @@ void EmuView::setFrameTimingStats(FrameTimingViewStats viewStats)
 	auto frameDuration = duration_cast<Milliseconds>(stats.endOfFrame - stats.startOfFrame);
 	auto clockHz = emuScreen.frameTimerRate().hz();
 	frameTimingStatsStr.clear();
-	std::format_to(std::back_inserter(frameTimingStatsStr), "Frame Timing Stats\n\n"
-		"Screen: {:g}Hz\n"
-		"Clock: {:g}Hz\n"
-		"Input: {:g}Hz\n"
-		"Output: {:g}Hz\n"
-		"Delta Time: {} ({:.2f}Hz)\n"
-		"Frame Time: {}",
+	std::format_to(std::back_inserter(frameTimingStatsStr), "帧计时统计\n\n"
+		"屏幕: {:g}Hz\n"
+		"时钟: {:g}Hz\n"
+		"输入: {:g}Hz\n"
+		"输出: {:g}Hz\n"
+		"帧间隔: {} ({:.2f}Hz)\n"
+		"帧时间: {}",
 		emuScreen.frameRate().hz(), clockHz,
 		viewStats.inputRate.hz(), viewStats.outputRate.hz(),
 		deltaDurationMS, toHz(deltaDuration), frameDuration);

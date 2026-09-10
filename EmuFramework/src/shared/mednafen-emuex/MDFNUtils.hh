@@ -116,7 +116,7 @@ inline BoolMenuItem saveFilenameTypeMenuItem(auto &view, auto &system)
 {
 	return {"Save Filename Type", view.attachParams(),
 		system.noMD5InFilenames,
-		"Default", "No MD5",
+		"默认", "No MD5",
 		[&](BoolMenuItem &item) { system.noMD5InFilenames = item.flipBoolValue(view); }
 	};
 }

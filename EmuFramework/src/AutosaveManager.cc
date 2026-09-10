@@ -83,7 +83,7 @@ bool AutosaveManager::load(AutosaveActionSource src, LoadAutosaveMode mode)
 	catch(std::exception &err)
 	{
 		if(!hasWriteAccessToDir(system().contentSaveDirectory()))
-			app.postErrorMessage(8, "Save folder inaccessible, please set it in Options➔File Paths➔Saves");
+			app.postErrorMessage(8, "无法访问保存文件夹, 请从此设置它 设置➔文件路径➔存档");
 		else
 			app.postErrorMessage(4, err.what());
 		return false;
@@ -97,7 +97,7 @@ bool AutosaveManager::saveState()
 	auto state = app.saveState();
 	if(stateIO.write(state.span(), 0).bytes != ssize_t(state.size()))
 	{
-		app.postErrorMessage(4, "Error writing autosave state");
+		app.postErrorMessage(4, "写入自动保存进度时出错");
 		return false;
 	}
 	return true;
@@ -113,7 +113,7 @@ bool AutosaveManager::loadState()
 	}
 	catch(std::exception &err)
 	{
-		app.postErrorMessage(4, std::format("Error loading autosave state:\n{}", err.what()));
+		app.postErrorMessage(4, std::format("加载自动存档时出错:\n{}", err.what()));
 		return false;
 	}
 }
@@ -169,7 +169,7 @@ bool AutosaveManager::deleteSlot(std::string_view name)
 std::string AutosaveManager::slotFullName() const
 {
 	if(autoSaveSlot == noAutosaveName)
-		return "No Save";
+		return "不保存";
 	else if(autoSaveSlot.empty())
 		return "Main";
 	else

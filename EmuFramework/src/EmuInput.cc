@@ -95,7 +95,7 @@ bool InputManager::handleAppActionKeyInput(EmuApp& app, InputAction action, cons
 			}
 			else
 			{
-				viewController.pushAndShowModal(std::make_unique<YesNoAlertView>(app.attachParams(), "Really Overwrite State?",
+				viewController.pushAndShowModal(std::make_unique<YesNoAlertView>(app.attachParams(), "是否覆盖档案?",
 					YesNoAlertView::Delegates
 					{
 						.onYes = [&app]
@@ -121,7 +121,7 @@ bool InputManager::handleAppActionKeyInput(EmuApp& app, InputAction action, cons
 				break;
 			auto suspendCtx = app.suspendEmulationThread();
 			system.decStateSlot();
-			app.postMessage(1, false, std::format("State Slot: {}", system.stateSlotName()));
+			app.postMessage(1, false, std::format("档案: {}", system.stateSlotName()));
 			return true;
 		}
 		case incStateSlot:
@@ -130,7 +130,7 @@ bool InputManager::handleAppActionKeyInput(EmuApp& app, InputAction action, cons
 				break;
 			auto suspendCtx = app.suspendEmulationThread();
 			system.incStateSlot();
-			app.postMessage(1, false, std::format("State Slot: {}", system.stateSlotName()));
+			app.postMessage(1, false, std::format("档案: {}", system.stateSlotName()));
 			return true;
 		}
 		case takeScreenshot:
@@ -166,7 +166,7 @@ bool InputManager::handleAppActionKeyInput(EmuApp& app, InputAction action, cons
 		{
 			if(!isPushed)
 				break;
-			viewController.pushAndShowModal(std::make_unique<YesNoAlertView>(app.attachParams(), "Really Exit?",
+			viewController.pushAndShowModal(std::make_unique<YesNoAlertView>(app.attachParams(), "确定退出?",
 				YesNoAlertView::Delegates{.onYes = [&app]{ app.appContext().exit(); }}), srcEvent, false);
 		}
 		break;
@@ -570,11 +570,11 @@ std::string InputManager::toString(KeyInfo k) const
 		s += toString(c, k.flags);
 	}
 	if(k.flags.turbo && k.flags.toggle)
-		s += " (Turbo Toggle)";
+		s += " (切换连发)";
 	else if(k.flags.turbo)
-		s += " (Turbo)";
+		s += " (连发)";
 	else if(k.flags.toggle)
-		s += " (Toggle)";
+		s += " (切换)";
 	return s;
 }
 
@@ -650,25 +650,25 @@ std::string_view toString(AppKeyCode code)
 {
 	switch(code)
 	{
-		case AppKeyCode::openContent: return "Open Content";
-		case AppKeyCode::closeContent: return "Close Content";
+		case AppKeyCode::openContent: return "打开游戏";
+		case AppKeyCode::closeContent: return "关闭游戏";
 		case AppKeyCode::openSystemActions: return "Open System Actions";
 		case AppKeyCode::saveState: return "Save State";
-		case AppKeyCode::loadState: return "Load State";
-		case AppKeyCode::decStateSlot: return "Decrement State Slot";
-		case AppKeyCode::incStateSlot: return "Increment State Slot";
-		case AppKeyCode::fastForward: return "Fast-forward";
+		case AppKeyCode::loadState: return "读档";
+		case AppKeyCode::decStateSlot: return "上一个档案";
+		case AppKeyCode::incStateSlot: return "下一个档案";
+		case AppKeyCode::fastForward: return "快动作模式";
 		case AppKeyCode::takeScreenshot: return "Take Screenshot";
-		case AppKeyCode::openMenu: return "Open Menu";
-		case AppKeyCode::toggleFastForward: return "Toggle Fast-forward";
-		case AppKeyCode::turboModifier: return "Turbo Modifier";
-		case AppKeyCode::exitApp: return "Exit App";
-		case AppKeyCode::slowMotion: return "Slow-motion";
-		case AppKeyCode::toggleSlowMotion: return "Toggle Slow-motion";
-		case AppKeyCode::rewind: return "Rewind One State";
-		case AppKeyCode::softReset: return "Soft Reset";
-		case AppKeyCode::hardReset: return "Hard Reset";
-		case AppKeyCode::resetMenu: return "Open Reset Menu";
+		case AppKeyCode::openMenu: return "打开菜单";
+		case AppKeyCode::toggleFastForward: return "快动作模式切换";
+		case AppKeyCode::turboModifier: return "连发调节";
+		case AppKeyCode::exitApp: return "退出应用";
+		case AppKeyCode::slowMotion: return "慢动作模式";
+		case AppKeyCode::toggleSlowMotion: return "慢动作模式切换";
+		case AppKeyCode::rewind: return "回放一个存档";
+		case AppKeyCode::softReset: return "软复位";
+		case AppKeyCode::hardReset: return "硬复位";
+		case AppKeyCode::resetMenu: return "打开重置菜单";
 	};
 	return "";
 }

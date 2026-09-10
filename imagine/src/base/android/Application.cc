@@ -308,7 +308,7 @@ const char *aHardwareBufferFormatStr(uint32_t format)
 {
 	switch(format)
 	{
-		case 0: return "Unset";
+		case 0: return "未设置";
 		case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM: return "RGBA8888";
 		case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM: return "RGBX8888";
 		case AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM: return "RGB888";

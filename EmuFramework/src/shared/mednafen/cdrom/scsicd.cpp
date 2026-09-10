@@ -2429,7 +2429,7 @@ static SCSICH PCFXCommandDefs[] =
  { 0xD9, SCF_REQUIRES_MEDIUM, DoNEC_SAPEP, "Set Audio Playback End Position" },   // "Play"
  { 0xDA, SCF_REQUIRES_MEDIUM, DoNEC_PAUSE, "Pause" },			     // "Still"
  { 0xDB, SCF_REQUIRES_MEDIUM | SCF_UNTESTED, DoNEC_SST, "Set Stop Time" },
- { 0xDC, SCF_REQUIRES_MEDIUM, DoNEC_EJECT, "Eject" },
+ { 0xDC, SCF_REQUIRES_MEDIUM, DoNEC_EJECT, "弹出" },
  { 0xDD, SCF_REQUIRES_MEDIUM, DoNEC_READSUBQ, "Read Subchannel Q" },
  { 0xDE, SCF_REQUIRES_MEDIUM, DoNEC_GETDIRINFO, "Get Dir Info" },
 

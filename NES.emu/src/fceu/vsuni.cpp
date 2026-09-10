@@ -376,13 +376,13 @@ void FCEU_VSUniCheck(uint64 md5partial, int *MapperNo, uint8 *Mirroring) {
 					gigastr.append(tmpStr);
 				}
 				if (tofix & 8) {
-					const char* mstr[4] = { "Normal", "RBI Baseball protection", "TKO Boxing protection", "Super Xevious protection"};
+					const char* mstr[4] = { "正常", "RBI Baseball protection", "TKO Boxing protection", "Super Xevious protection"};
 					snprintf(tmpStr, sizeof(tmpStr), "Vs. System type should be set to \"%s\".  ", mstr[vs->type]);
 					gigastr.append(tmpStr);
 				}
 				if (tofix & 16)
 				{
-					const char* mstr[10] = { "Default", "RP2C04-0001", "RP2C04-0002", "RP2C04-0003", "RP2C04-0004", "RC2C03B", "RC2C05-01", "RC2C05-02" , "RC2C05-03" , "RC2C05-04" };
+					const char* mstr[10] = { "默认", "RP2C04-0001", "RP2C04-0002", "RP2C04-0003", "RP2C04-0004", "RC2C03B", "RC2C05-01", "RC2C05-02" , "RC2C05-03" , "RC2C05-04" };
 					snprintf(tmpStr, sizeof(tmpStr), "Vs. System PPU should be set to \"%s\".  ", mstr[vs->ppu]);
 					gigastr.append(tmpStr);
 				}

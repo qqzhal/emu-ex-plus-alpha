@@ -69,13 +69,13 @@ FS::PathString ApplicationContext::sharedStoragePath() const
 FS::PathLocation ApplicationContext::sharedStoragePathLocation() const
 {
 	auto path = sharedStoragePath();
-	return {path, "Storage Media", "Media"};
+	return {path, "存储媒体", "Media"};
 }
 
 FS::PathLocation AndroidApplicationContext::externalMediaPathLocation() const
 {
 	auto path = application().externalMediaPath(thisThreadJniEnv(), baseActivityObject());
-	return {path, "App Media Folder", "Media"};
+	return {path, "应用媒体文件夹", "Media"};
 }
 
 std::vector<FS::PathLocation> ApplicationContext::rootFileLocations() const
@@ -96,7 +96,7 @@ std::vector<FS::PathLocation> ApplicationContext::rootFileLocations() const
 		return
 			{
 				sharedStoragePathLocation(),
-				{storageDevicesPath, "Storage Devices", "Storage"}
+				{storageDevicesPath, "存储设备", "Storage"}
 			};
 	}
 	else

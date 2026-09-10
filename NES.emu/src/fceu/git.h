@@ -126,7 +126,7 @@ inline const char* ESIFC_Name(ESIFC esifc)
 		"<none>",
 		"Arkanoid Paddle",
 		"Hyper Shot gun",
-		"4-Player Adapter",
+		"4-人适配器",
 		"Family Keyboard",
 		"Subor Keyboard",
 		"PEC586 Keyboard",

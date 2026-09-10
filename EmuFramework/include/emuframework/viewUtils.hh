@@ -141,7 +141,7 @@ inline void pushAndShowNewCollectValueRangeInputView(ViewAttachParams attach, co
 			}
 			else
 			{
-				postErrorMessage(view.appContext(), "Value not in range");
+				postErrorMessage(view.appContext(), "值不在范围内");
 				return false;
 			}
 		});

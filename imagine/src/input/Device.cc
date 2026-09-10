@@ -25,7 +25,7 @@ constexpr auto keyButtonName(Key b)
 {
 	switch(b)
 	{
-		case 0: return "None";
+		case 0: return "无";
 		case Keycode::SPACE: return "Space";
 		case Keycode::A: return "a";
 		case Keycode::B: return "b";
@@ -92,7 +92,7 @@ constexpr auto keyButtonName(Key b)
 		case Keycode::HOME: return "Home";
 		case Keycode::END: return "End";
 		case Keycode::INSERT: return "Insert";
-		case Keycode::DELETE: return "Delete";
+		case Keycode::DELETE: return "删除";
 		case Keycode::TAB: return "Tab";
 		case Keycode::SCROLL_LOCK: return "Scroll Lock";
 		case Keycode::CAPS: return "Caps Lock";
@@ -281,7 +281,7 @@ constexpr const char* ouyaButtonName(Key b)
 		case Keycode::Ouya::A: return "A";
 		case Keycode::Ouya::L3: return "L3";
 		case Keycode::Ouya::R3: return "R3";
-		case Keycode::MENU: return "System";
+		case Keycode::MENU: return "系统";
 	}
 	return nullptr;
 }

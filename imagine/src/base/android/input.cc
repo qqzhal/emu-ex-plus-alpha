@@ -100,7 +100,7 @@ constexpr const char *keyEventActionStr(uint32_t action)
 		default: return "Unknown";
 		case AKEY_EVENT_ACTION_DOWN: return "Down";
 		case AKEY_EVENT_ACTION_UP: return "Up";
-		case AKEY_EVENT_ACTION_MULTIPLE: return "Multiple";
+		case AKEY_EVENT_ACTION_MULTIPLE: return "多人";
 	}
 }
 

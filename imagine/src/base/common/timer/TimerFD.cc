@@ -64,7 +64,7 @@ static int timerfd_gettime(int ufd,
 namespace IG
 {
 
-constexpr SystemLogger log{"Timer"};
+constexpr SystemLogger log{"计时器"};
 
 static void cancelTimer(int fd)
 {

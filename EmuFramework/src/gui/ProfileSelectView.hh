@@ -50,7 +50,7 @@ public:
 		if(desc.hasDefaultItem)
 		{
 			activeItem = 0;
-			textItem.emplace_back("Default", attach, [this]()
+			textItem.emplace_back("默认", attach, [this]()
 			{
 				auto del = onProfileChange;
 				dismiss();

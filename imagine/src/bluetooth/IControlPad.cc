@@ -79,7 +79,7 @@ constexpr const char* icpButtonName(Key b)
 {
 	switch(b)
 	{
-		case 0: return "None";
+		case 0: return "无";
 		case iControlPadKey::A: return "A";
 		case iControlPadKey::B: return "B";
 		case iControlPadKey::X: return "X";

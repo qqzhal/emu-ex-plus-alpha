@@ -106,15 +106,15 @@ public:
 		AlertView
 		{
 			attach,
-			"Really Exit? (Push Back/Escape again to confirm)",
+			"确定退出?(再次按返回/退出以确认)",
 			hasEmuContent ? 3u : 2u
 		}
 	{
-		item.emplace_back("Yes", attach, [this](){ appContext().exit(); });
-		item.emplace_back("No", attach, [](){});
+		item.emplace_back("是", attach, [this](){ appContext().exit(); });
+		item.emplace_back("否", attach, [](){});
 		if(hasEmuContent)
 		{
-			item.emplace_back("Close Menu", attach, [this](){ app().showEmulation(); });
+			item.emplace_back("关闭对话", attach, [this](){ app().showEmulation(); });
 		}
 	}
 
@@ -591,7 +591,7 @@ void EmuApp::launchSystem(const Input::Event &e)
 			!autosaveManager.saveOnlyBackupMemory && stateIsOlderThanBackupMemory())
 		{
 			viewController().pushAndShowModal(std::make_unique<YesNoAlertView>(attachParams(),
-				"Autosave state timestamp is older than the contents of backup memory, really load it even though progress may be lost?",
+				"自动存档时间戳早于备份内存的内容,即使进度可能会丢失,也要真正加载它?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]{ finishLaunch(*this, LoadAutosaveMode::Normal); },
@@ -621,7 +621,7 @@ void EmuApp::handleOpenFileCommand(CStringView path)
 	auto name = appContext().fileUriDisplayName(path);
 	if(name.empty())
 	{
-		postErrorMessage(std::format("Can't access path name for:\n{}", path));
+		postErrorMessage(std::format("无法访问的路径名:\n{}", path));
 		return;
 	}
 	if(appContext().fileUriType(path) == FS::file_type::directory)
@@ -751,7 +751,7 @@ void EmuApp::onSystemCreated()
 	updateVideoContentRotation();
 	if(!rewindManager.reset(system().stateSize()))
 	{
-		postErrorMessage(4, "Not enough memory for rewind states");
+		postErrorMessage(4, "没有足够的内存用于回放");
 	}
 	viewController().onSystemCreated();
 }
@@ -761,7 +761,7 @@ void EmuApp::promptSystemReloadDueToSetOption(ViewAttachParams attach, const Inp
 	if(!system().hasContent())
 		return;
 	viewController().pushAndShowModal(std::make_unique<YesNoAlertView>(attach,
-		"This option takes effect next time the system starts. Restart it now?",
+		"此选项在系统下次启动时生效. 现在重新启动它?",
 		YesNoAlertView::Delegates
 		{ .onYes = [this, params]
 			{
@@ -780,7 +780,7 @@ void EmuApp::unpostMessage()
 void EmuApp::printScreenshotResult(bool success)
 {
 	postMessage(3, !success, std::format("{}{}",
-		success ? "Wrote screenshot at " : "Error writing screenshot at ",
+		success ? "Wrote screenshot at " : "错误保存截图到 ",
 		appContext().formatDateAndTime(WallClock::now())));
 }
 
@@ -791,7 +791,7 @@ void EmuApp::createSystemWithMedia(IO io, CStringView path, std::string_view dis
 	assert(strlen(path));
 	if(!EmuApp::hasArchiveExtension(displayName) && !EmuSystem::defaultFsFilter(displayName))
 	{
-		postErrorMessage("File doesn't have a valid extension");
+		postErrorMessage("文件没有有效的扩展名");
 		return;
 	}
 	if(!EmuApp::willCreateSystem(attachParams, e))
@@ -887,7 +887,7 @@ bool EmuApp::saveState(CStringView path, bool notify)
 {
 	if(!system().hasContent())
 	{
-		postErrorMessage("System not running");
+		postErrorMessage("系统不在运行中");
 		return false;
 	}
 	log.info("saving state {}", path);
@@ -896,12 +896,12 @@ bool EmuApp::saveState(CStringView path, bool notify)
 	{
 		system().saveState(path);
 		if(notify)
-			postMessage("State Saved");
+			postMessage("进度已保存");
 		return true;
 	}
 	catch(std::exception &err)
 	{
-		postErrorMessage(4, std::format("Can't save state:\n{}", err.what()));
+		postErrorMessage(4, std::format("无法保存进度:\n{}", err.what()));
 		return false;
 	}
 }
@@ -915,7 +915,7 @@ bool EmuApp::loadState(CStringView path)
 {
 	if(!system().hasContent()) [[unlikely]]
 	{
-		postErrorMessage("System not running");
+		postErrorMessage("系统不在运行中");
 		return false;
 	}
 	log.info("loading state {}", path);
@@ -929,9 +929,9 @@ bool EmuApp::loadState(CStringView path)
 	catch(std::exception &err)
 	{
 		if(system().hasContent() && !hasWriteAccessToDir(system().contentSaveDirectory()))
-			postErrorMessage(8, "Save folder inaccessible, please set it in Options➔File Paths➔Saves");
+			postErrorMessage(8, "无法访问保存文件夹, 请从此设置它 设置➔文件路径➔存档");
 		else
-			postErrorMessage(4, std::format("Can't load state:\n{}", err.what()));
+			postErrorMessage(4, std::format("无法载入进度:\n{}", err.what()));
 		return false;
 	}
 }
@@ -965,7 +965,7 @@ FS::PathString EmuApp::validSearchPath(const FS::PathString &path) const
 
 std::unique_ptr<YesNoAlertView> EmuApp::makeCloseContentView()
 {
-	return std::make_unique<YesNoAlertView>(attachParams(), "Really close current content?",
+	return std::make_unique<YesNoAlertView>(attachParams(), "是否结束当前游戏?",
 		YesNoAlertView::Delegates
 		{
 			.onYes = [this]

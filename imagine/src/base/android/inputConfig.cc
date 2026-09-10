@@ -76,7 +76,7 @@ static const char *inputDeviceKeyboardTypeToStr(int type)
 {
 	switch(type)
 	{
-		case AINPUT_KEYBOARD_TYPE_NONE: return "None";
+		case AINPUT_KEYBOARD_TYPE_NONE: return "无";
 		case AINPUT_KEYBOARD_TYPE_NON_ALPHABETIC: return "Non-Alphabetic";
 		case AINPUT_KEYBOARD_TYPE_ALPHABETIC: return "Alphabetic";
 	}

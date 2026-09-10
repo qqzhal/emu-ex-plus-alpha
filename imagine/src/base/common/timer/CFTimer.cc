@@ -21,7 +21,7 @@
 namespace IG
 {
 
-constexpr SystemLogger log{"Timer"};
+constexpr SystemLogger log{"计时器"};
 
 CFTimer::CFTimer(TimerDesc desc, CallbackDelegate del):
 	debugLabel_{desc.debugLabel.size() ? desc.debugLabel : "unnamed"},

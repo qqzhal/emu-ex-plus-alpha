@@ -119,7 +119,7 @@ public:
 	Property<uint8_t, CFGKEY_DEFAULT_VIDEO_SYSTEM,
 		PropertyDesc<uint8_t>{.defaultValue = 0, .isValid = isValidWithMax<3>}> optionDefaultVideoSystem;
 	Property<bool, CFGKEY_SPRITE_LIMIT, PropertyDesc<bool>{.defaultValue = true}> optionSpriteLimit;
-	Property<uint8_t, CFGKEY_SOUND_QUALITY, // default to "High" (1) as "Normal" (0) has low accuracy affecting samples per frame
+	Property<uint8_t, CFGKEY_SOUND_QUALITY, // default to "High" (1) as "正常" (0) has low accuracy affecting samples per frame
 		PropertyDesc<uint8_t>{.defaultValue = 1, .isValid = isValidWithMax<2>}> optionSoundQuality;
 	Property<bool, CFGKEY_COMPATIBLE_FRAMESKIP> optionCompatibleFrameskip;
 	Property<uint8_t, CFGKEY_START_VIDEO_LINE,

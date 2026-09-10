@@ -1041,8 +1041,8 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	FCEU_printf(" Mapper #: %d\n", MapperNo);
 	FCEU_printf(" Mapper name: %s\n", mappername);
 	FCEU_printf(" Mirroring: %s\n", Mirroring == 2 ? "None (Four-screen)" : Mirroring ? "Vertical" : "Horizontal");
-	FCEU_printf(" Battery-backed: %s\n", (head.ROM_type & 2) ? "Yes" : "No");
-	FCEU_printf(" Trained: %s\n", (head.ROM_type & 4) ? "Yes" : "No");
+	FCEU_printf(" Battery-backed: %s\n", (head.ROM_type & 2) ? "是" : "否");
+	FCEU_printf(" Trained: %s\n", (head.ROM_type & 4) ? "是" : "否");
 	if(iNES2) 
 	{
 		FCEU_printf(" NES2.0 Extensions\n");

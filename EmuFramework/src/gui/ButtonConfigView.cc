@@ -68,10 +68,10 @@ ButtonConfigView::ButtonConfigView(ViewAttachParams attach, InputManagerView &ro
 	rootIMView{rootIMView_},
 	reset
 	{
-		"Unbind All", attach,
+		"重置全部", attach,
 		[this](const Input::Event &e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Really unbind all keys in this category?",
+			pushAndShowModal(makeView<YesNoAlertView>("是否解绑此类中的所有按键?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -88,10 +88,10 @@ ButtonConfigView::ButtonConfigView(ViewAttachParams attach, InputManagerView &ro
 	},
 	resetDefaults
 	{
-		"Reset Defaults", attach,
+		"重置默认值", attach,
 		[this](const Input::Event &e)
 		{
-			pushAndShowModal(makeView<YesNoAlertView>("Really reset all keys in this category to defaults?",
+			pushAndShowModal(makeView<YesNoAlertView>("确实将此类别中的所有键重置为默认值?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -196,8 +196,8 @@ void ButtonConfigSetView::initPointerUI()
 	if(pointerUIIsInit())
 		return;
 	log.info("init pointer UI elements");
-	unbind = {renderer().mainTask, "Unbind", &defaultFace()};
-	cancel = {renderer().mainTask, "Cancel", &defaultFace()};
+	unbind = {renderer().mainTask, "解除", &defaultFace()};
+	cancel = {renderer().mainTask, "取消", &defaultFace()};
 	unbindB.x2 = 1;
 }
 
@@ -271,7 +271,7 @@ bool ButtonConfigSetView::inputEvent(const Input::Event& e, ViewInputEventParams
 					{
 						savedDev = d;
 						app().postMessage(7, false,
-							std::format("You pushed a key from device:\n{}\nPush another from it to open its config menu",
+							std::format("你从设备上按下了一个键:\n{}\n从该设备按下另一个键以打开其配置菜单",
 							inputDevData(*d).displayName));
 						postDraw();
 					}
@@ -333,9 +333,9 @@ void ButtonConfigSetView::draw(Gfx::RendererCommands&__restrict__ cmds, ViewDraw
 void ButtonConfigSetView::onAddedToController(ViewController *, const Input::Event &e)
 {
 	if(e.motionEvent())
-		text.resetString(std::format("Push up to 3 keys, release any to set:\n{}", actionStr));
+		text.resetString(std::format("最多按3个键,松开任意键即可设置:\n{}", actionStr));
 	else
-		text.resetString(std::format("Push up to 3 keys, release any to set:\n{}\n\nTo unbind:\nQuickly push [Left] key twice in previous menu", actionStr));
+		text.resetString(std::format("最多按3个键,松开任意键即可设置:\n{}\n\n解除绑定:\n快速按下上一菜单中的[左]键两次", actionStr));
 	if(e.motionEvent())
 	{
 		initPointerUI();

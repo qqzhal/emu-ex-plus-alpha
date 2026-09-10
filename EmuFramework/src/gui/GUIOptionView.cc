@@ -26,16 +26,16 @@ namespace EmuEx
 {
 
 static constexpr bool USE_MOBILE_ORIENTATION_NAMES = Config::envIsAndroid || Config::envIsIOS;
-static const char *landscapeName = USE_MOBILE_ORIENTATION_NAMES ? "Landscape" : "90° Left";
-static const char *landscape2Name = USE_MOBILE_ORIENTATION_NAMES ? "Landscape 2" : "90° Right";
-static const char *portraitName = USE_MOBILE_ORIENTATION_NAMES ? "Portrait" : "Standard";
-static const char *portrait2Name = USE_MOBILE_ORIENTATION_NAMES ? "Portrait 2" : "Upside Down";
+static const char *landscapeName = USE_MOBILE_ORIENTATION_NAMES ? "左横屏" : "左转90度";
+static const char *landscape2Name = USE_MOBILE_ORIENTATION_NAMES ? "右横屏" : "右转90度";
+static const char *portraitName = USE_MOBILE_ORIENTATION_NAMES ? "竖屏" : "标准";
+static const char *portrait2Name = USE_MOBILE_ORIENTATION_NAMES ? "倒置" : "上下翻转";
 
 GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
-	TableView{"GUI Options", attach, item},
+	TableView{"界面设置", attach, item},
 	pauseUnfocused
 	{
-		"Pause if unfocused", attach,
+		"闲置时暂停", attach,
 		app().pauseUnfocused,
 		[this](BoolMenuItem &item)
 		{
@@ -53,10 +53,10 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 		{"8",  attach, {.id = 8000}},
 		{"9",  attach, {.id = 9000}},
 		{"10", attach, {.id = 10000}},
-		{"Custom Value", attach,
+		{"自定义", attach,
 			[this](const Input::Event &e)
 			{
-				pushAndShowNewCollectValueRangeInputView<float, 2, 10>(attachParams(), e, "Input 2.0 to 10.0", "",
+				pushAndShowNewCollectValueRangeInputView<float, 2, 10>(attachParams(), e, "输入2.0到10.0之间的值", "",
 					[this](CollectTextInputView &, auto val)
 					{
 						int scaledIntVal = val * 1000.0;
@@ -71,7 +71,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	fontSize
 	{
-		"Font Size", attach,
+		"字体大小", attach,
 		MenuId{app().fontSize},
 		fontSizeItem,
 		{
@@ -85,7 +85,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	notificationIcon
 	{
-		"Suspended App Icon", attach,
+		"暂停应用图标", attach,
 		app().showsNotificationIcon,
 		[this](BoolMenuItem &item)
 		{
@@ -94,13 +94,13 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	statusBarItem
 	{
-		{"Off",    attach, MenuItem::Config{.id = InEmuTristate::Off}},
-		{"In Emu", attach, MenuItem::Config{.id = InEmuTristate::InEmu}},
-		{"On",     attach, MenuItem::Config{.id = InEmuTristate::On}}
+		{"关",    attach, MenuItem::Config{.id = InEmuTristate::Off}},
+		{"游戏时", attach, MenuItem::Config{.id = InEmuTristate::InEmu}},
+		{"开",     attach, MenuItem::Config{.id = InEmuTristate::On}}
 	},
 	statusBar
 	{
-		"Hide Status Bar", attach,
+		"隐藏状态栏", attach,
 		MenuId(InEmuTristate(app().hidesStatusBar.value())),
 		statusBarItem,
 		MultiChoiceMenuItem::Config
@@ -110,13 +110,13 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	lowProfileOSNavItem
 	{
-		{"Off",    attach, MenuItem::Config{.id = InEmuTristate::Off}},
-		{"In Emu", attach, MenuItem::Config{.id = InEmuTristate::InEmu}},
-		{"On",     attach, MenuItem::Config{.id = InEmuTristate::On}}
+		{"关",    attach, MenuItem::Config{.id = InEmuTristate::Off}},
+		{"游戏时", attach, MenuItem::Config{.id = InEmuTristate::InEmu}},
+		{"开",     attach, MenuItem::Config{.id = InEmuTristate::On}}
 	},
 	lowProfileOSNav
 	{
-		"Dim OS UI", attach,
+		"沉浸式界面", attach,
 		MenuId(InEmuTristate(app().lowProfileOSNav.value())),
 		lowProfileOSNavItem,
 		MultiChoiceMenuItem::Config
@@ -126,13 +126,13 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	hideOSNavItem
 	{
-		{"Off",    attach, MenuItem::Config{.id = InEmuTristate::Off}},
-		{"In Emu", attach, MenuItem::Config{.id = InEmuTristate::InEmu}},
-		{"On",     attach, MenuItem::Config{.id = InEmuTristate::On}}
+		{"关",    attach, MenuItem::Config{.id = InEmuTristate::Off}},
+		{"游戏时", attach, MenuItem::Config{.id = InEmuTristate::InEmu}},
+		{"开",     attach, MenuItem::Config{.id = InEmuTristate::On}}
 	},
 	hideOSNav
 	{
-		"Hide OS Navigation", attach,
+		"隐藏系统导航", attach,
 		MenuId(InEmuTristate(app().hidesOSNav.value())),
 		hideOSNavItem,
 		MultiChoiceMenuItem::Config
@@ -142,7 +142,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	idleDisplayPowerSave
 	{
-		"Allow Screen Timeout In Emulation", attach,
+		"自动休眠", attach,
 		app().idleDisplayPowerSave,
 		[this](BoolMenuItem &item)
 		{
@@ -151,7 +151,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	navView
 	{
-		"Title Bar", attach,
+		"标题栏", attach,
 		app().showsTitleBar,
 		[this](BoolMenuItem &item)
 		{
@@ -160,7 +160,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	backNav
 	{
-		"Title Back Navigation", attach,
+		"标题栏导航", attach,
 		attach.viewManager.needsBackControl,
 		[this](BoolMenuItem &item)
 		{
@@ -171,9 +171,9 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	systemActionsIsDefaultMenu
 	{
-		"Default Menu", attach,
+		"默认菜单", attach,
 		app().systemActionsIsDefaultMenu,
-		"Last Used", "System Actions",
+		"最后使用", "System Actions",
 		[this](BoolMenuItem &item)
 		{
 			app().systemActionsIsDefaultMenu = item.flipBoolValue(*this);
@@ -181,7 +181,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	showBundledGames
 	{
-		"Show Bundled Content", attach,
+		"显示附加游戏", attach,
 		app().showsBundledGames,
 		[this](BoolMenuItem &item)
 		{
@@ -190,7 +190,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	showBluetoothScan
 	{
-		"Show Bluetooth Menu Items", attach,
+		"显示蓝牙菜单项", attach,
 		app().showsBluetoothScan,
 		[this](BoolMenuItem &item)
 		{
@@ -199,7 +199,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	showHiddenFiles
 	{
-		"Show Hidden Files", attach,
+		"显示隐藏文件", attach,
 		app().showHiddenFilesInPicker,
 		[this](BoolMenuItem &item)
 		{
@@ -208,11 +208,11 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	maxRecentContent
 	{
-		"Max Recent Content Items", std::to_string(app().recentContent.maxRecentContent), attach,
+		"显示最近游戏项目数", std::to_string(app().recentContent.maxRecentContent), attach,
 		[this](const Input::Event &e)
 		{
 			pushAndShowNewCollectValueRangeInputView<int, 1, 100>(attachParams(), e,
-				"Input 1 to 100", std::to_string(app().recentContent.maxRecentContent),
+				"输入1到100之间的值", std::to_string(app().recentContent.maxRecentContent),
 				[this](CollectTextInputView &, auto val)
 				{
 					app().recentContent.maxRecentContent = val;
@@ -223,11 +223,11 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	orientationHeading
 	{
-		"Orientation", attach
+		"屏幕方向", attach
 	},
 	menuOrientationItem
 	{
-		{"Auto",         attach, {.id = Orientations{}}},
+		{"自动",         attach, {.id = Orientations{}}},
 		{landscapeName,  attach, {.id = Orientations{.landscapeRight = 1}}},
 		{landscape2Name, attach, {.id = Orientations{.landscapeLeft = 1}}},
 		{portraitName,   attach, {.id = Orientations{.portrait = 1}}},
@@ -244,7 +244,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	emuOrientationItem
 	{
-		{"Auto",         attach, {.id = Orientations{}}},
+		{"自动",         attach, {.id = Orientations{}}},
 		{landscapeName,  attach, {.id = Orientations{.landscapeRight = 1}}},
 		{landscape2Name, attach, {.id = Orientations{.landscapeLeft = 1}}},
 		{portraitName,   attach, {.id = Orientations{.portrait = 1}}},
@@ -252,7 +252,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	emuOrientation
 	{
-		"In Emu", attach,
+		"游戏时", attach,
 		MenuId{uint8_t(app().emuOrientation.value())},
 		emuOrientationItem,
 		{
@@ -261,7 +261,7 @@ GUIOptionView::GUIOptionView(ViewAttachParams attach, bool customMenu):
 	},
 	layoutBehindSystemUI
 	{
-		"Display Behind OS UI", attach,
+		"应用界面全屏显示", attach,
 		app().doesLayoutBehindSystemUI(),
 		[this](BoolMenuItem &item)
 		{

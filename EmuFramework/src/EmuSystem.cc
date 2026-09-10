@@ -443,7 +443,7 @@ void EmuSystem::loadContentFromFile(IO file, CStringView path, std::string_view 
 		}
 		if(!io)
 		{
-			throw std::runtime_error("No recognized file extensions in archive");
+			throw std::runtime_error("存档中没有可识别的文件扩展名");
 		}
 		closeAndSetupNew(path, displayName);
 		contentFileName_ = originalName;

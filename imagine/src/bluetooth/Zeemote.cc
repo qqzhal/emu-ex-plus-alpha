@@ -38,7 +38,7 @@ constexpr const char *zeemoteButtonName(Input::Key k)
 {
 	switch(k)
 	{
-		case 0: return "None";
+		case 0: return "无";
 		case Input::ZeemoteKey::A: return "A";
 		case Input::ZeemoteKey::B: return "B";
 		case Input::ZeemoteKey::C: return "C";

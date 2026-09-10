@@ -43,8 +43,8 @@ std::string_view asString(Orientations o)
 {
 	switch(o)
 	{
-		case Orientations{}: return "Unset";
-		case Orientations{.portrait = 1}: return "Portrait";
+		case Orientations{}: return "未设置";
+		case Orientations{.portrait = 1}: return "竖屏";
 		case Orientations{.landscapeRight = 1}: return "Landscape Right";
 		case Orientations{.portraitUpsideDown = 1}: return "Portrait Upside-Down";
 		case Orientations{.landscapeLeft = 1}: return "Landscape Left";

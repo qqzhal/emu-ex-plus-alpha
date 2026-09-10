@@ -27,19 +27,19 @@ constexpr SystemLogger log{"StateSlotView"};
 
 static auto slotHeadingName(EmuSystem &sys)
 {
-	return std::format("Set State Slot ({})", sys.stateSlot());
+	return std::format("设置档案 ({})", sys.stateSlot());
 }
 
 StateSlotView::StateSlotView(ViewAttachParams attach):
 	TableView{"Save States", attach, menuItems},
 	load
 	{
-		"Load State", attach,
+		"读档", attach,
 		[this](TextMenuItem &item, View &, const Input::Event &e)
 		{
 			if(!item.active())
 				return;
-			pushAndShowModal(makeView<YesNoAlertView>("Really load state?",
+			pushAndShowModal(makeView<YesNoAlertView>("是否加载档案?",
 				YesNoAlertView::Delegates
 				{
 					.onYes = [this]
@@ -61,7 +61,7 @@ StateSlotView::StateSlotView(ViewAttachParams attach):
 			}
 			else
 			{
-				pushAndShowModal(makeView<YesNoAlertView>("Really overwrite state?",
+				pushAndShowModal(makeView<YesNoAlertView>("是否覆盖存档?",
 					YesNoAlertView::Delegates{.onYes = [this]{ doSaveState(); }}), e);
 			}
 		}

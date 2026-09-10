@@ -70,7 +70,7 @@ MDFNFILE::MDFNFILE(VirtualFS* vfs, const std::string& path, const std::vector<Fi
 					return; // success
 				}
 			}
-			throw MDFN_Error(0, "No recognized file extensions in archive");
+			throw MDFN_Error(0, "存档中没有可识别的文件扩展名");
 		}
 		catch(...)
 		{

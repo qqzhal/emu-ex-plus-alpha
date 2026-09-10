@@ -48,7 +48,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 {
 	BoolMenuItem fourScore
 	{
-		"4-Player Adapter", attachParams(),
+		"4-人适配器", attachParams(),
 		(bool)system().optionFourScore,
 		[this](BoolMenuItem &item, View &, Input::Event e)
 		{
@@ -70,15 +70,15 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	TextMenuItem inputPortsItem[4]
 	{
-		{"Auto",          attachParams(), {.id = packInputEnums(SI_UNSET, SI_UNSET)}},
+		{"自动",          attachParams(), {.id = packInputEnums(SI_UNSET, SI_UNSET)}},
 		{"Gamepads",      attachParams(), {.id = packInputEnums(SI_GAMEPAD, SI_GAMEPAD)}},
-		{"Gun (2P, NES)", attachParams(), {.id = packInputEnums(SI_GAMEPAD, SI_ZAPPER)}},
-		{"Gun (1P, VS)",  attachParams(), {.id = packInputEnums(SI_ZAPPER, SI_GAMEPAD)}},
+		{"光枪(2P, NES)", attachParams(), {.id = packInputEnums(SI_GAMEPAD, SI_ZAPPER)}},
+		{"光枪(1P, VS)",  attachParams(), {.id = packInputEnums(SI_ZAPPER, SI_GAMEPAD)}},
 	};
 
 	MultiChoiceMenuItem inputPorts
 	{
-		"Input Ports", attachParams(),
+		"输入端口", attachParams(),
 		MenuId{packInputEnums(system().inputPort1.value(), system().inputPort2.value())},
 		inputPortsItem,
 		{
@@ -95,7 +95,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	BoolMenuItem fcMic
 	{
-		"P2 Start As Microphone", attachParams(),
+		"P2启动为麦克风", attachParams(),
 		replaceP2StartWithMicrophone,
 		[this](BoolMenuItem &item, View &, Input::Event e)
 		{
@@ -106,7 +106,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	TextMenuItem videoSystemItem[4]
 	{
-		{"Auto",  attachParams(), {.id = 0}},
+		{"自动",  attachParams(), {.id = 0}},
 		{"NTSC",  attachParams(), {.id = 1}},
 		{"PAL",   attachParams(), {.id = 2}},
 		{"Dendy", attachParams(), {.id = 3}},
@@ -114,7 +114,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	MultiChoiceMenuItem videoSystem
 	{
-		"System", attachParams(),
+		"系统", attachParams(),
 		MenuId{system().optionVideoSystem},
 		videoSystemItem,
 		{
@@ -139,16 +139,16 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	BoolMenuItem compatibleFrameskip
 	{
-		"Frameskip Mode", attachParams(),
+		"跳帧模式", attachParams(),
 		(bool)system().optionCompatibleFrameskip,
-		"Fast", "Compatible",
+		"快速", "Compatible",
 		[this](BoolMenuItem &item, View &, Input::Event e)
 		{
 			if(!item.boolValue())
 			{
 				app().pushAndShowModalView(makeView<YesNoAlertView>(
-					"Use compatible mode if the current game has glitches when "
-					"fast-forwarding/frame-skipping, at the cost of increased CPU usage.",
+					"如果当前游戏在以下情况下出现故障,请使用兼容模式 "
+					"快进/跳帧, 代价是CPU使用率增加.",
 					YesNoAlertView::Delegates
 					{
 						.onYes = [this, &item]
@@ -166,7 +166,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 		}
 	};
 
-	TextHeadingMenuItem videoHeading{"Video", attachParams()};
+	TextHeadingMenuItem videoHeading{"视频", attachParams()};
 
 	static uint16_t packVideoLines(uint8_t start, uint8_t total)
 	{
@@ -207,7 +207,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	BoolMenuItem horizontalVideoCrop
 	{
-		"Crop 8 Pixels On Sides", attachParams(),
+		"在侧面裁剪8个像素", attachParams(),
 		(bool)system().optionHorizontalVideoCrop,
 		[this](BoolMenuItem &item)
 		{
@@ -219,7 +219,7 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 		}
 	};
 
-	TextHeadingMenuItem overclocking{"Overclocking", attachParams()};
+	TextHeadingMenuItem overclocking{"超频", attachParams()};
 
 	BoolMenuItem overclockingEnabled
 	{
@@ -234,11 +234,11 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	DualTextMenuItem extraLines
 	{
-		"Extra Lines Per Frame", std::to_string(postrenderscanlines), attachParams(),
+		"每帧额外行数", std::to_string(postrenderscanlines), attachParams(),
 		[this](const Input::Event &e)
 		{
 			pushAndShowNewCollectValueRangeInputView<int, 0, maxExtraLinesPerFrame>(attachParams(), e,
-				"Input 0 to 30000", std::to_string(postrenderscanlines),
+				"输入0到30000之间的值", std::to_string(postrenderscanlines),
 				[this](CollectTextInputView&, auto val)
 				{
 					system().sessionOptionSet();
@@ -251,11 +251,11 @@ class ConsoleOptionView : public TableView, public MainAppHelper
 
 	DualTextMenuItem vblankMultipler
 	{
-		"Vertical Blank Line Multiplier", std::to_string(vblankscanlines), attachParams(),
+		"垂直空行乘数", std::to_string(vblankscanlines), attachParams(),
 		[this](const Input::Event &e)
 		{
 			pushAndShowNewCollectValueRangeInputView<int, 0, maxVBlankMultiplier>(attachParams(), e,
-				"Input 0 to 16", std::to_string(vblankscanlines),
+				"输入0到16之间的值", std::to_string(vblankscanlines),
 				[this](CollectTextInputView&, auto val)
 				{
 					system().sessionOptionSet();
@@ -286,7 +286,7 @@ public:
 	ConsoleOptionView(ViewAttachParams attach):
 		TableView
 		{
-			"Console Options",
+			"控制台设置",
 			attach,
 			menuItem
 		} {}
@@ -299,7 +299,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 
 	BoolMenuItem spriteLimit
 	{
-		"Sprite Limit", attachParams(),
+		"限制精灵", attachParams(),
 		(bool)system().optionSpriteLimit,
 		[this](BoolMenuItem &item, View &, Input::Event e)
 		{
@@ -310,7 +310,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 
 	TextMenuItem videoSystemItem[4]
 	{
-		{"Auto", attachParams(), [this](){ system().optionDefaultVideoSystem = 0; }},
+		{"自动", attachParams(), [this](){ system().optionDefaultVideoSystem = 0; }},
 		{"NTSC", attachParams(), [this](){ system().optionDefaultVideoSystem = 1; }},
 		{"PAL", attachParams(), [this](){ system().optionDefaultVideoSystem = 2; }},
 		{"Dendy", attachParams(), [this](){ system().optionDefaultVideoSystem = 3; }},
@@ -318,7 +318,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 
 	MultiChoiceMenuItem videoSystem
 	{
-		"Default Video System", attachParams(),
+		"默认视频制式", attachParams(),
 		system().optionDefaultVideoSystem.value(),
 		videoSystemItem
 	};
@@ -357,7 +357,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 		{"Wavebeam",            attachParams(), [this]() { setPalette(appContext(), wavebeamPalPath); }},
 		{"Lightful",            attachParams(), [this]() { setPalette(appContext(), lightfulPalPath); }},
 		{"Palightful",          attachParams(), [this]() { setPalette(appContext(), palightfulPalPath); }},
-		{"Custom File", attachParams(), [this](Input::Event e)
+		{"自定义文件", attachParams(), [this](Input::Event e)
 			{
 				auto fsFilter = [](std::string_view name) { return endsWithAnyCaseless(name, ".pal"); };
 				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, fsFilter, e, false);
@@ -377,7 +377,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 
 	MultiChoiceMenuItem defaultPal
 	{
-		"Default Palette", attachParams(),
+		"默认调色板", attachParams(),
 		[this]()
 		{
 			if(system().defaultPalettePath.empty()) return 0;
@@ -414,7 +414,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 
 	MultiChoiceMenuItem visibleVideoLines
 	{
-		"Default Visible Lines", attachParams(),
+		"默认可视行", attachParams(),
 		[this]()
 		{
 			switch(system().optionDefaultVisibleVideoLines)
@@ -438,7 +438,7 @@ class CustomVideoOptionView : public VideoOptionView, public MainAppHelper
 
 	BoolMenuItem correctLineAspect
 	{
-		"Correct Line Aspect Ratio", attachParams(),
+		"正确的行长宽比", attachParams(),
 		(bool)system().optionCorrectLineAspect,
 		[this](BoolMenuItem &item)
 		{
@@ -472,21 +472,21 @@ class CustomAudioOptionView : public AudioOptionView, public MainAppHelper
 
 	TextMenuItem qualityItem[3]
 	{
-		{"Normal", attachParams(), [this](){ setQuality(0); }},
+		{"正常", attachParams(), [this](){ setQuality(0); }},
 		{"High", attachParams(), [this]() { setQuality(1); }},
-		{"Highest", attachParams(), [this]() { setQuality(2); }}
+		{"最高", attachParams(), [this]() { setQuality(2); }}
 	};
 
 	MultiChoiceMenuItem quality
 	{
-		"Emulation Quality", attachParams(),
+		"模拟质量", attachParams(),
 		system().optionSoundQuality.value(),
 		qualityItem
 	};
 
 	BoolMenuItem lowPassFilter
 	{
-		"Low Pass Filter", attachParams(),
+		"低通滤波器", attachParams(),
 		(bool)FSettings.lowpass,
 		[this](BoolMenuItem &item)
 		{
@@ -496,7 +496,7 @@ class CustomAudioOptionView : public AudioOptionView, public MainAppHelper
 
 	BoolMenuItem swapDutyCycles
 	{
-		"Swap Duty Cycles", attachParams(),
+		"交换占空比", attachParams(),
 		swapDuty,
 		[this](BoolMenuItem &item)
 		{
@@ -504,11 +504,11 @@ class CustomAudioOptionView : public AudioOptionView, public MainAppHelper
 		}
 	};
 
-	TextHeadingMenuItem mixer{"Mixer", attachParams()};
+	TextHeadingMenuItem mixer{"混频器", attachParams()};
 
 	BoolMenuItem squareWave1
 	{
-		"Square Wave #1", attachParams(),
+		"方波 #1", attachParams(),
 		(bool)FSettings.Square1Volume,
 		[this](BoolMenuItem &item)
 		{
@@ -518,7 +518,7 @@ class CustomAudioOptionView : public AudioOptionView, public MainAppHelper
 
 	BoolMenuItem squareWave2
 	{
-		"Square Wave #2", attachParams(),
+		"方波 #2", attachParams(),
 		(bool)FSettings.Square2Volume,
 		[this](BoolMenuItem &item)
 		{
@@ -528,7 +528,7 @@ class CustomAudioOptionView : public AudioOptionView, public MainAppHelper
 
 	BoolMenuItem triangleWave1
 	{
-		"Triangle Wave", attachParams(),
+		"三角波", attachParams(),
 		(bool)FSettings.TriangleVolume,
 		[this](BoolMenuItem &item)
 		{
@@ -538,7 +538,7 @@ class CustomAudioOptionView : public AudioOptionView, public MainAppHelper
 
 	BoolMenuItem noise
 	{
-		"Noise", attachParams(),
+		"噪声", attachParams(),
 		(bool)FSettings.NoiseVolume,
 		[this](BoolMenuItem &item)
 		{
@@ -627,7 +627,7 @@ class CustomFilePathOptionView : public FilePathOptionView, public MainAppHelper
 		biosMenuEntryStr(system().fdsBiosPath), attachParams(),
 		[this](TextMenuItem &, View &, Input::Event e)
 		{
-			pushAndShow(makeViewWithName<DataFileSelectView<>>("Disk System BIOS",
+			pushAndShow(makeViewWithName<DataFileSelectView<>>("磁碟机BIOS",
 				app().validSearchPath(FS::dirnameUri(system().fdsBiosPath)),
 				[this](CStringView path, FS::file_type type)
 				{
@@ -641,7 +641,7 @@ class CustomFilePathOptionView : public FilePathOptionView, public MainAppHelper
 
 	std::string biosMenuEntryStr(CStringView path) const
 	{
-		return std::format("Disk System BIOS: {}", appContext().fileUriDisplayName(path));
+		return std::format("磁碟机BIOS: {}", appContext().fileUriDisplayName(path));
 	}
 
 public:
@@ -662,7 +662,7 @@ private:
 	TextMenuItem setSide[DISK_SIDES]
 	{
 		{
-			"Set Disk 1 Side A", attachParams(),
+			"设磁盘1为A侧", attachParams(),
 			[this](View &view, Input::Event e)
 			{
 				FCEU_FDSSetDisk(0, system());
@@ -670,7 +670,7 @@ private:
 			}
 		},
 		{
-			"Set Disk 1 Side B", attachParams(),
+			"设磁盘1为B侧", attachParams(),
 			[this](View &view, Input::Event e)
 			{
 				FCEU_FDSSetDisk(1, system());
@@ -678,7 +678,7 @@ private:
 			}
 		},
 		{
-			"Set Disk 2 Side A", attachParams(),
+			"设磁盘2为A侧", attachParams(),
 			[this](View &view, Input::Event e)
 			{
 				FCEU_FDSSetDisk(2, system());
@@ -686,7 +686,7 @@ private:
 			}
 		},
 		{
-			"Set Disk 2 Side B", attachParams(),
+			"设磁盘2为B侧", attachParams(),
 			[this](View &view, Input::Event e)
 			{
 				FCEU_FDSSetDisk(3, system());
@@ -697,7 +697,7 @@ private:
 
 	TextMenuItem insertEject
 	{
-		"Eject", attachParams(),
+		"弹出", attachParams(),
 		[](View& view)
 		{
 			if(FCEU_FDSInserted())
@@ -714,7 +714,7 @@ public:
 	FDSControlView(ViewAttachParams attach):
 		TableView
 		{
-			"FDS Control",
+			"FDS控制",
 			attach,
 			items
 		}
@@ -741,14 +741,14 @@ private:
 		if(!isFDS)
 			return;
 		if(!FCEU_FDSInserted())
-			fdsControl.compile("FDS Control (No Disk)");
+			fdsControl.compile("FDS控制(无盘)");
 		else
-			fdsControl.compile(std::format("FDS Control (Disk {}:{})", (FCEU_FDSCurrentSide() >> 1) + 1, (FCEU_FDSCurrentSide() & 1) ? 'B' : 'A'));
+			fdsControl.compile(std::format("FDS控制(盘 {}:{})", (FCEU_FDSCurrentSide() >> 1) + 1, (FCEU_FDSCurrentSide() & 1) ? 'B' : 'A'));
 	}
 
 	TextMenuItem options
 	{
-		"Console Options", attachParams(),
+		"控制台设置", attachParams(),
 		[this](Input::Event e) { pushAndShow(makeView<ConsoleOptionView>(), e); }
 	};
 
@@ -774,7 +774,7 @@ class CustomSystemOptionView : public SystemOptionView, public MainAppHelper
 
 	BoolMenuItem skipFdcAccess
 	{
-		"Fast-forward Disk IO", attachParams(),
+		"快进磁盘IO", attachParams(),
 		system().fastForwardDuringFdsAccess,
 		[this](BoolMenuItem &item)
 		{

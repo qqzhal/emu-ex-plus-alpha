@@ -80,7 +80,7 @@ static const char *ps3ButtonName(Input::Key k)
 	using namespace IG::Input;
 	switch(k)
 	{
-		case 0: return "None";
+		case 0: return "无";
 		case PS3Key::CROSS: return "Cross";
 		case PS3Key::CIRCLE: return "Circle";
 		case PS3Key::SQUARE: return "Square";
@@ -111,7 +111,7 @@ static const char *ps3ButtonName(Input::Key k)
 }
 
 PS3Controller::PS3Controller(ApplicationContext ctx, BluetoothAddr):
-	BluetoothInputDevice{ctx, Input::Map::PS3PAD, {.gamepad = true}, "PS3 Controller"},
+	BluetoothInputDevice{ctx, Input::Map::PS3PAD, {.gamepad = true}, "PS3控制器"},
 	ctlSock{ctx}, intSock{ctx} {}
 
 const char *PS3Controller::keyName(Input::Key k) const

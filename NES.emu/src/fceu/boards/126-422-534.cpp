@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-/* Mapper 422: "Normal" version of the mapper. Represents UNIF boards BS-400R and BS-4040R.
+/* Mapper 422: "正常" version of the mapper. Represents UNIF boards BS-400R and BS-4040R.
    Mapper 126: Power Joy version of the mapper, connecting CHR A18 and A19 in reverse order.
    Mapper 534: Waixing version of the mapper, inverting the reload value of the MMC3 scanline counter.
 */

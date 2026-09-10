@@ -32,21 +32,21 @@ namespace EmuEx
 {
 
 constexpr SystemLogger log{"InputOverridesView"};
-constexpr auto confirmDeleteDeviceSettingsStr = "Delete device settings from the configuration file?";
+constexpr auto confirmDeleteDeviceSettingsStr = "删除配置文件中的设备设置?";
 
 InputOverridesView::InputOverridesView(ViewAttachParams attach,
 	InputManager& inputManager_):
-	TableView{"Input Overrides (Per Content)", attach, items},
+	TableView{"输入覆盖(按内容)", attach, items},
 	inputManager{inputManager_},
 	deleteDeviceConfig
 	{
-		"Delete Saved Device Settings", attach,
+		"删除已保存设备设置", attach,
 		[this](TextMenuItem &item, View &, const Input::Event &e)
 		{
 			auto &savedSessionDevConfigs = inputManager.savedSessionDevConfigs;
 			if(!savedSessionDevConfigs.size())
 			{
-				app().postMessage("No saved device settings");
+				app().postMessage("未保存的设备设置");
 				return;
 			}
 			auto multiChoiceView = makeViewWithName<TextTableView>(item, savedSessionDevConfigs.size());
@@ -70,7 +70,7 @@ InputOverridesView::InputOverridesView(ViewAttachParams attach,
 			pushAndShow(std::move(multiChoiceView), e);
 		}
 	},
-	deviceListHeading{"Individual Device Settings", attach}
+	deviceListHeading{"单个设备设置", attach}
 {
 	loadItems();
 	inputManager.onUpdateDevices = [this]()
@@ -125,7 +125,7 @@ constexpr std::string_view playerAsString(int p)
 {
 	assert(p != playerIndexUnset);
 	if(p == playerIndexMulti)
-		return "Multiple";
+		return "多人";
 	return playerNumStrings[p];
 }
 
@@ -138,8 +138,8 @@ InputOverridesDeviceView::InputOverridesDeviceView(UTF16String name, ViewAttachP
 		[&]
 		{
 			DynArray<TextMenuItem> items{EmuSystem::maxPlayers + 2uz};
-			items[0] = {"Default", attach, {.id = playerIndexUnset}};
-			items[1] = {"Multiple", attach, {.id = playerIndexMulti}};
+			items[0] = {"默认", attach, {.id = playerIndexUnset}};
+			items[1] = {"多人", attach, {.id = playerIndexMulti}};
 			for(auto i : iotaCount(EmuSystem::maxPlayers))
 			{
 				items[i + 2] = {playerNumStrings[i], attach, {.id = i}};
@@ -190,7 +190,7 @@ InputOverridesDeviceView::InputOverridesDeviceView(UTF16String name, ViewAttachP
 	},
 	devConf{inputDevData(dev).devConf}
 {
-	loadProfile.setName(std::format("Profile: {}", devConf.sessionConfig(inputManager).keyConfName));
+	loadProfile.setName(std::format("配置: {}", devConf.sessionConfig(inputManager).keyConfName));
 	loadItems();
 }
 
@@ -207,7 +207,7 @@ void InputOverridesDeviceView::loadItems()
 void InputOverridesDeviceView::onShow()
 {
 	TableView::onShow();
-	loadProfile.compile(std::format("Profile: {}", devConf.sessionConfig(inputManager).keyConfName));
+	loadProfile.compile(std::format("配置: {}", devConf.sessionConfig(inputManager).keyConfName));
 }
 
 }

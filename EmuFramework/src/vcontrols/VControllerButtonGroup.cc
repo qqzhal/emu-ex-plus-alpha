@@ -210,7 +210,7 @@ void VControllerButtonGroup::drawBounds(Gfx::RendererCommands &__restrict__ cmds
 static std::string namesString(auto &buttons, const InputManager &app)
 {
 	if(buttons.empty())
-		return "Empty Group";
+		return "空组合";
 	std::string s{buttons.front().name(app)};
 	for(const auto &b : buttons | std::ranges::views::drop(1))
 	{

@@ -53,7 +53,7 @@ public:
 		},
 		edit
 		{
-			"Add/Edit", attach,
+			"添加/编辑", attach,
 			[this](const Input::Event &e)
 			{
 				auto editCheatsView = app().makeEditCheatsView(attachParams(), *this);
@@ -141,7 +141,7 @@ protected:
 					return true;
 				onCheatsChanged();
 				view.dismiss();
-				pushAndShowNewCollectTextInputView(attachParams(), {}, "Input description", "",
+				pushAndShowNewCollectTextInputView(attachParams(), {}, "输入描述", "",
 					[this, &cheat = *cheatPtr](CollectTextInputView &view, const char *str)
 					{
 						if(!system().setCheatName(cheat, str))
@@ -177,7 +177,7 @@ public:
 			[this](const Input::Event &e)
 			{
 				pushAndShowNewCollectValueInputView<const char*>(attachParams(), e,
-					"Input description", system().cheatName(*cheatPtr),
+					"输入描述", system().cheatName(*cheatPtr),
 					[this](CollectTextInputView&, auto str)
 					{
 						if(!system().setCheatName(*cheatPtr, str))
@@ -194,10 +194,10 @@ public:
 		},
 		remove
 		{
-			"Delete", attach,
+			"删除", attach,
 			[this](const Input::Event &e)
 			{
-				pushAndShowModal(makeView<YesNoAlertView>("Really delete this cheat?",
+				pushAndShowModal(makeView<YesNoAlertView>("确定删除此秘籍?",
 					YesNoAlertView::Delegates{.onYes = [this]{ removeCheat(); }}), e);
 			}
 		} {}

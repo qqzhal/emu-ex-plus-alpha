@@ -104,7 +104,7 @@ constexpr const char *wiimoteButtonName(Input::Key k)
 {
 	switch(k)
 	{
-		case 0: return "None";
+		case 0: return "无";
 		case Input::WiimoteKey::_1: return "1";
 		case Input::WiimoteKey::_2: return "2";
 		case Input::WiimoteKey::A: return "A";
@@ -131,7 +131,7 @@ constexpr const char *wiiCCButtonName(Input::Key k)
 	using namespace IG::Input;
 	switch(k)
 	{
-		case 0: return "None";
+		case 0: return "无";
 		case WiiCCKey::A: return "A";
 		case WiiCCKey::B: return "B";
 		case WiiCCKey::PLUS: return "+";

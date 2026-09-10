@@ -48,7 +48,7 @@ namespace EmuEx
 {
 
 constexpr SystemLogger log{"NES.emu"};
-const char *EmuSystem::creditsViewStr = CREDITS_INFO_STRING "(c) 2011-2025\nRobert Broglia\nwww.explusalpha.com\n\nPortions (c) the\nFCEUX Team\nfceux.com";
+const char *EmuSystem::creditsViewStr = CREDITS_INFO_STRING "(c) 2011-2025\nRobert Broglia\nwww.explusalpha.com\n\n夏暖i汉化\nxianuani.ys168.com\n\nPortions (c) the\nFCEUX Team\nfceux.com";
 bool EmuSystem::hasCheats = true;
 bool EmuSystem::hasPALVideoSystem = true;
 bool EmuSystem::hasResetModes = true;
@@ -133,7 +133,7 @@ void NesSystem::readState(EmuApp &app, std::span<uint8_t> buff)
 {
 	EmuFileIO memFile{buff};
 	if(!FCEUSS_LoadFP(&memFile, SSLOADPARAM_NOBACKUP))
-		throw std::runtime_error("Invalid state data");
+		throw std::runtime_error("无效存档数据");
 }
 
 size_t NesSystem::writeState(std::span<uint8_t> buff, SaveStateFlags flags)
@@ -241,10 +241,10 @@ static const char* fceuInputToStr(int input)
 {
 	switch(input)
 	{
-		case SI_UNSET: return "Unset";
+		case SI_UNSET: return "未设置";
 		case SI_GAMEPAD: return "Gamepad";
 		case SI_ZAPPER: return "Zapper";
-		case SI_NONE: return "None";
+		case SI_NONE: return "无";
 		default: bug_unreachable("input == %d", input); return 0;
 	}
 }
@@ -368,7 +368,7 @@ void NesSystem::loadContent(IO &io, EmuSystemCreateParams, OnLoadProgressDelegat
 		if(loaderErrorString.size())
 			throw std::runtime_error(std::exchange(loaderErrorString, {}));
 		else
-			throw std::runtime_error("Error loading game");
+			throw std::runtime_error("加载游戏时出错");
 	}
 	autoDetectedRegion = regionFromName(contentFileName());
 	setRegion(optionVideoSystem, optionDefaultVideoSystem, autoDetectedRegion);

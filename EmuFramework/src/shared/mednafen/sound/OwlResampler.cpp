@@ -672,7 +672,7 @@ OwlResampler::OwlResampler(double input_rate, double output_rate, double rate_er
  #endif
  else
  {
-  SIMDTypeString = "None";
+  SIMDTypeString = "无";
 
   // Default loop does 4 MACs per iteration.
   NumCoeffs = (NumCoeffs + 3) &~ 3;
