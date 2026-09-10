@@ -403,7 +403,8 @@ static void runEmuCase(const char *path, int prg16k) {
 // ---- real-ROM case: run an actual game ROM and look for the black screen ----
 // Loads a real .nes file, runs 600 frames (10s) through the real CPU+PPU,
 // then reports whether the CPU is alive and the framebuffer has content.
-// This is the acceptance test for actual hack ROMs (no synthetic data).
+// Local use only: game ROMs must never be committed or uploaded to the
+// repository (see the enhancement guide, section 12).
 
 static void dumpPGM(const char *path) {
 	FILE *pf = fopen(path, "wb");
@@ -534,7 +535,7 @@ int main(int argc, char **argv) {
 	runEmuCase("h195_game2.nes", 96);
 	runEmuCase("h195_origin.nes", 32);
 
-	// real ROMs passed as extra args (downloaded by CI or given locally):
+	// real ROMs passed as extra args (local runs only, never from CI):
 	// load and run the actual game, dump frames, detect a black screen
 	for (int a = 1; a < argc; a++)
 		realRomCase(argv[a]);
