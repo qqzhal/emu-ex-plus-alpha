@@ -195,7 +195,7 @@ public:
 	}
 
 protected:
-	TextMenuItem edit, import;
+	TextMenuItem import, edit;
 	std::vector<BoolMenuItem> cheats;
 	std::vector<DualTextMenuItem> groups;
 	std::vector<MenuItem*> items;
@@ -274,9 +274,9 @@ protected:
 				for(auto *e : g.second)
 					groupEntries.push_back({e->c, e->name});
 				groups.emplace_back(g.first, std::move(current), attachParams(),
-					[this, groupEntries = std::move(groupEntries), groupName = g.first](const Input::Event &e) mutable
+					[this, groupEntries, groupName](const Input::Event &e)
 					{
-						pushAndShow(makeView<CheatGroupSelectView>(attachParams(), std::move(groupName),
+						pushAndShow(makeView<CheatGroupSelectView>(std::move(groupName),
 							std::move(groupEntries), [this]{ onCheatsChanged(); }), e);
 					});
 				items.emplace_back(&groups.back());
