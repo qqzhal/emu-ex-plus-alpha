@@ -19,3 +19,10 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y zlib1g-dev
     - name: Build and run
       run: bash NES.emu/headless-test/build.sh
+    - name: Upload rendered screens
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: rendered-screens
+        path: build-headless/*.pgm
+        if-no-files-found: ignore

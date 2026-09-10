@@ -29,6 +29,7 @@
 #include "fceu/cart.h"
 #include "fceu/file.h"
 #include "fceu/ppu.h"
+#include "fceu/video.h"
 #include "fceu/x6502.h"
 #include "fceu/boards/mmc3.h"
 
@@ -110,6 +111,19 @@ static void fillSyntheticRom(std::vector<uint8> &prg, std::vector<uint8> &chr, i
 		0xE8,					// INX
 		0xE0, 0x40,				// CPX #$40
 		0xD0, 0xF5,				// BNE loop
+		0xA9, 0x3F, 0x8D, 0x06, 0x20,	// LDA #$3F / STA $2006   (palette)
+		0xA9, 0x00, 0x8D, 0x06, 0x20,	// LDA #$00 / STA $2006
+		0xA9, 0x0F, 0x8D, 0x07, 0x20,	// LDA #$0F / STA $2007   (black)
+		0xA9, 0x30, 0x8D, 0x07, 0x20,	// LDA #$30 / STA $2007   (white)
+		0xA9, 0x28, 0x8D, 0x07, 0x20,	// LDA #$28 / STA $2007   (orange)
+		0xA9, 0x16, 0x8D, 0x07, 0x20,	// LDA #$16 / STA $2007   (red)
+		0xA9, 0x20, 0x8D, 0x06, 0x20,	// LDA #$20 / STA $2006   (nametable)
+		0xA9, 0x00, 0x8D, 0x06, 0x20,	// LDA #$00 / STA $2006
+		0xA2, 0x00,				// LDX #0
+		0x8A, 0x8D, 0x07, 0x20,			// ntloop: TXA / STA $2007
+		0xE8,					// INX
+		0xE0, 0x40,				// CPX #$40
+		0xD0, 0xF7,				// BNE ntloop
 		0xA9, 0x90, 0x8D, 0x00, 0x20,	// LDA #$90 / STA $2000   (NMI on)
 		0xA9, 0x1E, 0x8D, 0x01, 0x20,	// LDA #$1E / STA $2001   (display on)
 		0xA9, 0x06, 0x8D, 0x00, 0x80,	// LDA #$06 / STA $8000   (select R6)
@@ -120,7 +134,7 @@ static void fillSyntheticRom(std::vector<uint8> &prg, std::vector<uint8> &chr, i
 	};
 	// fix the JMP target to the actual address of the forever loop
 	{
-		uint32 loopBankOff = 0x1A60 + 79;	// offset of the final JMP
+		uint32 loopBankOff = 0x1A60 + 125;	// offset of the final JMP
 		uint32 loopAddr = 0xE000 + loopBankOff;
 		code[code.size() - 2] = loopAddr & 0xFF;
 		code[code.size() - 1] = loopAddr >> 8;
@@ -304,8 +318,10 @@ static void runEmuCase(const char *path, int prg16k) {
 	SetReadHandler(0x0000, 0x1FFF, EmuARAML);
 	SetWriteHandler(0x0000, 0x1FFF, EmuBRAML);
 
-	FSettings.UsrFirstSLine[0] = FSettings.UsrLastSLine[0] = 0;
-	FSettings.UsrFirstSLine[1] = FSettings.UsrLastSLine[1] = 0;
+	FSettings.UsrFirstSLine[0] = 0;
+	FSettings.UsrLastSLine[0] = 239;
+	FSettings.UsrFirstSLine[1] = 0;
+	FSettings.UsrLastSLine[1] = 239;
 	FCEUPPU_Init();
 	FCEUPPU_SetVideoSystem(0);
 	currCartInfo->Power();
@@ -354,8 +370,32 @@ static void runEmuCase(const char *path, int prg16k) {
 			chrOk += CHRRAM[i] == (uint8)(0x40 + i * 3);
 	CHECK(chrOk >= 60, "boot program wrote the font table into CHR RAM");
 
-	printf("  info: last PC=$%04X display-on frames=%d chr-ok=%d/64\n",
-		X.PC, ppuOnFrames, chrOk);
+	// 6. the render pipeline actually produced pixels: count distinct
+	// palette indices on screen. A black-screen bug shows up here as an
+	// (almost) uniformly blank XBuf even though the game is running.
+	int nonzeroPixels = 0, distinctColors = 0, seen[64] = {};
+	for (int i = 0; i < 256 * 240; i++) {
+		uint8 p = XBuf[i] & 63;
+		if (p)
+			nonzeroPixels++;
+		if (!seen[p]++) {
+			distinctColors++;
+		}
+	}
+	char pngName[64];
+	snprintf(pngName, sizeof(pngName), "screen_%s.pgm", strrchr(path, '/') ? strrchr(path, '/') + 1 : path);
+	FILE *pf = fopen(pngName, "wb");
+	if (pf) {
+		fprintf(pf, "P5\n256 240\n255\n");
+		for (int i = 0; i < 256 * 240; i++)
+			fputc(XBuf[i] * 4, pf);
+		fclose(pf);
+	}
+	CHECK(nonzeroPixels > 5000, "framebuffer has real pixels (not all black)");
+	CHECK(distinctColors >= 3, "framebuffer has multiple colors (tiles rendered)");
+
+	printf("  info: last PC=$%04X display-on frames=%d chr-ok=%d/64 nonzero=%d colors=%d\n",
+		X.PC, ppuOnFrames, chrOk, nonzeroPixels, distinctColors);
 
 	FCEU_fclose(fp);
 }
