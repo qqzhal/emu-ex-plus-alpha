@@ -48,6 +48,7 @@ struct CartInfo
 	int battery_wram_size;
 	int vram_size;
 	int battery_vram_size;
+	uint64 totalFileSize;	// Real file size minus the 16-byte iNES header.
 	uint8 MD5[16];
 	uint32 CRC32;	// Should be set by the iNES/UNIF loading
 					// code, used by mapper/board code, maybe
@@ -75,6 +76,7 @@ struct CartInfo
 		battery_wram_size = 0;
 		vram_size = 0;
 		battery_vram_size = 0;
+		totalFileSize = 0;
 		memset( MD5, 0, sizeof(MD5));
 		CRC32 = 0;
 	};

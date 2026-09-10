@@ -27,6 +27,8 @@
 #include "mapinc.h"
 #include "mmc3.h"
 
+extern uint32 VROM_size;
+
 uint8 MMC3_cmd;
 uint8 kt_extra;
 uint8 *WRAM;
@@ -979,6 +981,12 @@ void Mapper194_Init(CartInfo *info) {
 }
 
 // ---------------------------- Mapper 195 -------------------------------
+// Waixing FS303 / Alien Technology MMC3 clone.
+// Handles non-power-of-2 PRG sizes used by expanded Captain Tsubasa 2 hacks.
+static uint8 *M195_XRAM = NULL;		// 4KB PRG-RAM at $5000-$5FFF
+static uint32 M195_prgbanks = 64;	// Real 8KB PRG bank count
+static int M195_mirror = MI_H;
+
 static void M195CW(uint32 A, uint8 V) {
 	if (V <= 3)	// Crystalis (c).nes, Captain Tsubasa Vol 2 - Super Striker (C)
 		setchr1r(0x10, A, V);
@@ -986,21 +994,59 @@ static void M195CW(uint32 A, uint8 V) {
 		setchr1r(0, A, V);
 }
 
+static void M195PW(uint32 A, uint8 V) {
+	if (V == 0xFE)
+		V = M195_prgbanks - 2;	// FixMMC3PRG: fixed $C000 bank
+	else if (V == 0xFF)
+		V = M195_prgbanks - 1;	// FixMMC3PRG: fixed $E000 bank
+	else
+		V %= M195_prgbanks;	// R6/R7 wrap at the real bank count
+	setprg8(A, V);
+}
+
 static void M195Power(void) {
 	GenMMC3Power();
-	setprg4r(0x10, 0x5000, 2);
-	SetWriteHandler(0x5000, 0x5fff, CartBW);
-	SetReadHandler(0x5000, 0x5fff, CartBR);
+	setmirror(M195_mirror);
+	memset(CHRRAM, 0, CHRRAMSIZE);
+	if (!(mmc3opts & 2))
+		memset(WRAM, 0, WRAMSIZE);
+	memset(M195_XRAM, 0, 0x1000);
+	setprg4r(0x12, 0x5000, 0);
+	SetWriteHandler(0x5000, 0x5FFF, CartBW);
+	SetReadHandler(0x5000, 0x5FFF, CartBR);
+}
+
+static void M195Close(void) {
+	if (M195_XRAM) {
+		FCEU_gfree(M195_XRAM);
+		M195_XRAM = NULL;
+	}
+	GenMMC3Close();
 }
 
 void Mapper195_Init(CartInfo *info) {
+	int prgbytes = (int)(info->totalFileSize - (uint32)VROM_size * 8192);
+	if (prgbytes < 512 * 1024 || prgbytes > 4096 * 1024 || (prgbytes & 0x3FFF))
+		prgbytes = 512 * 1024;
+	M195_prgbanks = prgbytes >> 13;
+	M195_mirror = info->mirror;
+
 	GenMMC3_Init(info, 512, 256, 16, info->battery);
+	PRGmask8[0] = 0xFF;
+	pwrap = M195PW;
 	cwrap = M195CW;
 	info->Power = M195Power;
+	info->Close = M195Close;
+
 	CHRRAMSIZE = 4096;
 	CHRRAM = (uint8*)FCEU_gmalloc(CHRRAMSIZE);
 	SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSIZE, 1);
 	AddExState(CHRRAM, CHRRAMSIZE, 0, "CHRR");
+
+	M195_XRAM = (uint8*)FCEU_gmalloc(0x1000);
+	memset(M195_XRAM, 0, 0x1000);
+	SetupCartPRGMapping(0x12, M195_XRAM, 0x1000, 1);
+	AddExState(M195_XRAM, 0x1000, 0, "M5KX");
 }
 
 // ---------------------------- Mapper 196 -------------------------------
@@ -1105,10 +1151,17 @@ static void M198PW(uint32 A, uint8 V) {
 		setprg8(A, V);
 }
 
+static void M198Power(void) {
+	GenMMC3Power();
+	setprg4r(0x10, 0x5000, 2);
+	SetWriteHandler(0x5000, 0x5fff, CartBW);
+	SetReadHandler(0x5000, 0x5fff, CartBR);
+}
+
 void Mapper198_Init(CartInfo *info) {
 	GenMMC3_Init(info, 1024, 0, 16, info->battery);
 	pwrap = M198PW;
-	info->Power = M195Power;
+	info->Power = M198Power;
 }
 
 /* ---------------------------- Mapper 205 ------------------------------ */
