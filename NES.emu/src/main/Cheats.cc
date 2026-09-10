@@ -482,6 +482,19 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 		return -1;
 	}
 
+	// 规范化中文输入法常见的全角标点 (逗号/分号/等号/空格) 为半角, 避免手编文件解析失败
+	auto replaceAll = [](std::string &s, std::string_view from, std::string_view to)
+	{
+		if(from.empty())
+			return;
+		for(size_t p = 0; (p = s.find(from, p)) != std::string::npos; p += to.size())
+			s.replace(p, from.size(), to);
+	};
+	replaceAll(text, "，", ",");
+	replaceAll(text, "；", ";");
+	replaceAll(text, "＝", "=");
+	replaceAll(text, "　", " ");
+
 	auto trim = [](std::string_view s)
 	{
 		while(!s.empty() && (s.front() == ' ' || s.front() == '\t' || s.front() == '\r'))
