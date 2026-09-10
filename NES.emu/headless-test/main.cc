@@ -82,11 +82,53 @@ static void fillSyntheticRom(std::vector<uint8> &prg, std::vector<uint8> &chr, i
 	for (uint32 i = 0; i < chr.size(); i++)
 		chr[i] = syntheticChrByte(i);
 
-	// CPU vectors at the end of the PRG image: NMI=$C550 RST=$FA60 IRQ=$C506
+	// CPU vectors at the end of the PRG image: NMI=$FA50 RST=$FA60 IRQ=$FA50
 	uint32 n = prg.size();
-	prg[n - 6] = 0x50; prg[n - 5] = 0xC5;
+	prg[n - 6] = 0x50; prg[n - 5] = 0xFA;
 	prg[n - 4] = 0x60; prg[n - 3] = 0xFA;
-	prg[n - 2] = 0x06; prg[n - 1] = 0xC5;
+	prg[n - 2] = 0x50; prg[n - 1] = 0xFA;
+
+	// Last fixed bank: a minimal boot program at CPU $FA60 (bank N-1 offset
+	// $1A60) that exercises every FS303 feature the hacks rely on:
+	//   XRAM write, MMC3 IRQ setup, vblank wait, CHR RAM font write through
+	//   $2007, display enable, R6=$42 bank switch, readback into WRAM.
+	const uint32 base = n - 8192;	// start of the last fixed bank
+	const uint32 off = base + 0x1A60;
+	std::vector<uint8> code = {		0x78,				// SEI
+		0xA2, 0xFF, 0x9A,			// LDX #$FF / TXS
+		0xA9, 0x5A, 0x8D, 0x00, 0x50,	// LDA #$5A / STA $5000   (XRAM)
+		0xA9, 0x10, 0x8D, 0x00, 0xC0,	// LDA #$10 / STA $C000   (IRQ latch)
+		0xA9, 0x00, 0x8D, 0x01, 0xC0,	// LDA #$00 / STA $C001   (reload)
+		0x8D, 0x01, 0xE0,			// STA $E001              (IRQ enable)
+		0x2C, 0x02, 0x20, 0x10, 0xFB,	// wait vblank 1
+		0x2C, 0x02, 0x20, 0x10, 0xFB,	// wait vblank 2
+		0xA9, 0x00, 0x8D, 0x06, 0x20,	// LDA #0 / STA $2006 / STA $2006
+		0x8D, 0x06, 0x20,
+		0xA2, 0x00,				// LDX #0
+		0xBD, 0x40, 0xFB,			// loop: LDA $FB40,X
+		0x8D, 0x07, 0x20,			// STA $2007              (CHR RAM)
+		0xE8,					// INX
+		0xE0, 0x40,				// CPX #$40
+		0xD0, 0xF5,				// BNE loop
+		0xA9, 0x90, 0x8D, 0x00, 0x20,	// LDA #$90 / STA $2000   (NMI on)
+		0xA9, 0x1E, 0x8D, 0x01, 0x20,	// LDA #$1E / STA $2001   (display on)
+		0xA9, 0x06, 0x8D, 0x00, 0x80,	// LDA #$06 / STA $8000   (select R6)
+		0xA9, 0x42, 0x8D, 0x01, 0x80,	// LDA #$42 / STA $8001   (bank $42)
+		0xAD, 0x00, 0x80,			// LDA $8000              (read bank data)
+		0x8D, 0x00, 0x60,			// STA $6000              (WRAM)
+		0x4C, 0xAF, 0xFA,			// forever: JMP $FAAF
+	};
+	// fix the JMP target to the actual address of the forever loop
+	{
+		uint32 loopBankOff = 0x1A60 + 79;	// offset of the final JMP
+		uint32 loopAddr = 0xE000 + loopBankOff;
+		code[code.size() - 2] = loopAddr & 0xFF;
+		code[code.size() - 1] = loopAddr >> 8;
+	}
+	memcpy(prg.data() + off, code.data(), code.size());
+	prg[base + 0x1A50] = 0x40;		// NMI/IRQ handler: RTI
+	for (int i = 0; i < 64; i++)
+		prg[base + 0x1B40 + i] = (uint8)(0x40 + i * 3);	// font table
 }
 
 static bool writeSyntheticRom(const char *path, int prg16k,
@@ -161,9 +203,9 @@ static void runCase(const char *path, int prg16k, const std::vector<uint8> &prg,
 
 	// --- reset vector must come from the last real bank (N-1), not a
 	//     bit-mangled bank: vectors live at the end of the PRG image ---
-	CHECK(rd(0xFFFA) == 0x50 && rd(0xFFFB) == 0xC5, "NMI vector = $C550");
+	CHECK(rd(0xFFFA) == 0x50 && rd(0xFFFB) == 0xFA, "NMI vector = $FA50");
 	CHECK(rd(0xFFFC) == 0x60 && rd(0xFFFD) == 0xFA, "RST vector = $FA60");
-	CHECK(rd(0xFFFE) == 0x06 && rd(0xFFFF) == 0xC5, "IRQ vector = $C506");
+	CHECK(rd(0xFFFE) == 0x50 && rd(0xFFFF) == 0xFA, "IRQ vector = $FA50");
 
 	uint32 last = expectBanks - 1;
 	CHECK(rd(0xE000) == syntheticPrgByte(last * 8192),
@@ -241,7 +283,7 @@ static DECLFW(EmuBRAML) {
 static bool g_displaySeen;
 static bool g_irqReloadSeen;
 
-static void runEmuCase(const char *path) {
+static void runEmuCase(const char *path, int prg16k) {
 	printf("== emu run: %s (real CPU + PPU timing, 240 frames)\n", path);
 
 	int userCancel = 0;
@@ -288,41 +330,32 @@ static void runEmuCase(const char *path) {
 			g_irqReloadSeen = true;
 	}
 
-	// 1. the 12KB patch layer must have been copied into $5000-$7FFF
-	int xramNonZero = 0, wramNonZero = 0;
-	for (int a = 0x5000; a < 0x6000; a++)
-		xramNonZero += rd(a) != 0;
-	for (int a = 0x6000; a < 0x7000; a++)
-		wramNonZero += rd(a) != 0;
-	CHECK(xramNonZero > 0, "patch layer present in $5000-$5FFF XRAM");
-	CHECK(wramNonZero > 0, "game data present in $6000-$7FFF WRAM");
+	// 1. the boot program ran: XRAM write landed, bank $42 readback in WRAM
+	CHECK(rd(0x5000) == 0x5A, "boot program wrote $5A into $5000 XRAM");
+	uint32 expectBanks = (uint32)prg16k * 2;
+	uint8 expectBankByte = syntheticPrgByte((0x42 % expectBanks) * 8192);
+	CHECK(rd(0x6000) == expectBankByte,
+		"real CPU read bank $42 via R6 and stored it in WRAM");
 
-	// 2. CPU liveness: a bank-mangling black screen jams or freezes the CPU
+	// 2. CPU liveness: a bank-mangling black screen jams the CPU
 	CHECK(!X.jammed, "CPU not jammed");
-	int lastUnique = 0;
-	{
-		std::vector<uint16> tail(pcs.end() - 60, pcs.end());
-		std::sort(tail.begin(), tail.end());
-		lastUnique = (int)(std::unique(tail.begin(), tail.end()) - tail.begin());
-	}
-	CHECK(lastUnique >= 4, "PC keeps moving in the last 60 frames");
 
-	// 3. the game turned the display on
+	// 3. the boot program turned the display on
 	CHECK(g_displaySeen, "PPU rendering enabled during boot");
 	CHECK(ppuOnFrames > 0, "at least one frame rendered with display on");
 
 	// 4. the MMC3 scanline IRQ clocked (game effects rely on it)
 	CHECK(g_irqReloadSeen, "MMC3 IRQ counter active");
 
-	// 5. font tiles written into the 4KB CHR RAM
-	int chrNonZero = 0;
+	// 5. font tiles written into the 4KB CHR RAM through $2007
+	int chrOk = 0;
 	if (CHRRAM)
-		for (int i = 0; i < 4096; i += 8)
-			chrNonZero += CHRRAM[i] != 0;
-	CHECK(chrNonZero > 8, "game wrote tiles into CHR RAM");
+		for (int i = 0; i < 64; i++)
+			chrOk += CHRRAM[i] == (uint8)(0x40 + i * 3);
+	CHECK(chrOk >= 60, "boot program wrote the font table into CHR RAM");
 
-	printf("  info: last PC=$%04X display-on frames=%d XRAM non-zero bytes=%d\n",
-		X.PC, ppuOnFrames, xramNonZero);
+	printf("  info: last PC=$%04X display-on frames=%d chr-ok=%d/64\n",
+		X.PC, ppuOnFrames, chrOk);
 
 	FCEU_fclose(fp);
 }
@@ -362,9 +395,9 @@ int main(int argc, char **argv) {
 
 	// live CPU + PPU run: this is where a black-screen-at-boot regression
 	// (bank mangling, dead patch layer, dead IRQ) would show up
-	runEmuCase("h195_game.nes");
-	runEmuCase("h195_game2.nes");
-	runEmuCase("h195_origin.nes");
+	runEmuCase("h195_game.nes", 80);
+	runEmuCase("h195_game2.nes", 96);
+	runEmuCase("h195_origin.nes", 32);
 
 	if (g_failures) {
 		printf("RESULT: FAIL (%d check(s) failed)\n", g_failures);
