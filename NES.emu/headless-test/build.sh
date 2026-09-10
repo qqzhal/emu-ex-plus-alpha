@@ -50,4 +50,4 @@ echo "LINK $OUT/headless-test"
 $CXX "${OBJs[@]}" -lz -o "$OUT/headless-test"
 
 cd "$OUT"
-./headless-test
+./headless-test "$@"

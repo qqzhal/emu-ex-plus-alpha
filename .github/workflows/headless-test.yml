@@ -17,12 +17,21 @@ jobs:
       uses: actions/checkout@v4
     - name: Install zlib dev
       run: sudo apt-get update && sudo apt-get install -y zlib1g-dev
+    - name: Download real test ROMs
+      run: |
+        curl -sL -H "Authorization: token ${{ github.token }}" -H "Accept: application/octet-stream" \
+          -o game_hack.nes "https://github.com/${{ github.repository }}/releases/download/headless-test-roms/game_hack.nes"
+        curl -sL -H "Authorization: token ${{ github.token }}" -H "Accept: application/octet-stream" \
+          -o game.nes "https://github.com/${{ github.repository }}/releases/download/headless-test-roms/game.nes"
+        ls -la game_hack.nes game.nes
     - name: Build and run
-      run: bash NES.emu/headless-test/build.sh
+      run: bash NES.emu/headless-test/build.sh game_hack.nes game.nes
     - name: Upload rendered screens
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: rendered-screens
-        path: build-headless/*.pgm
+        path: |
+          build-headless/*.pgm
+          *.pgm
         if-no-files-found: ignore

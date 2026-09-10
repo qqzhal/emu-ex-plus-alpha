@@ -400,6 +400,101 @@ static void runEmuCase(const char *path, int prg16k) {
 	FCEU_fclose(fp);
 }
 
+// ---- real-ROM case: run an actual game ROM and look for the black screen ----
+// Loads a real .nes file, runs 600 frames (10s) through the real CPU+PPU,
+// then reports whether the CPU is alive and the framebuffer has content.
+// This is the acceptance test for actual hack ROMs (no synthetic data).
+
+static void dumpPGM(const char *path) {
+	FILE *pf = fopen(path, "wb");
+	if (!pf)
+		return;
+	fprintf(pf, "P5\n256 240\n255\n");
+	for (int i = 0; i < 256 * 240; i++)
+		fputc(XBuf[i] * 4, pf);
+	fclose(pf);
+}
+
+static void realRomCase(const char *path) {
+	printf("== real ROM: %s (real CPU + PPU timing, 600 frames)\n", path);
+
+	int userCancel = 0;
+	FCEUFILE *fp = FCEU_fopen(path, 0, "rb", 0, 0, nullptr, &userCancel);
+	if (!fp) {
+		printf("  [FAIL] cannot open %s\n", path);
+		g_failures++;
+		return;
+	}
+	if (iNESLoad(path, fp, 0) != LOADER_OK) {
+		printf("  [FAIL] iNESLoad failed\n");
+		g_failures++;
+		FCEU_fclose(fp);
+		return;
+	}
+	CHECK(GameInfo && GameInfo->mappernum == 195, "mapper number is 195");
+	printf("  info: totalFileSize=%llu VROM_size=%u\n",
+		(unsigned long long)currCartInfo->totalFileSize, (unsigned)VROM_size);
+
+	memset(emuRAM, 0, sizeof(emuRAM));
+	SetReadHandler(0x0000, 0x1FFF, EmuARAML);
+	SetWriteHandler(0x0000, 0x1FFF, EmuBRAML);
+
+	FSettings.UsrFirstSLine[0] = 0;
+	FSettings.UsrLastSLine[0] = 239;
+	FSettings.UsrFirstSLine[1] = 0;
+	FSettings.UsrLastSLine[1] = 239;
+	FCEUPPU_Init();
+	FCEUPPU_SetVideoSystem(0);
+	currCartInfo->Power();
+	FCEUPPU_Power();
+	X6502_Init();
+	X6502_Power();
+
+	int xramNonZero = 0, chrNonZero = 0, wramNonZero = 0;
+	int displayFrames = 0;
+	bool jammed = false;
+	const int frames = 600;
+	for (int f = 1; f <= frames; f++) {
+		EmuEx::NesSystem sys;
+		FCEUPPU_Loop(EmuEx::EmuSystemTaskContext{}, sys, nullptr, nullptr, 0);
+		if (X.jammed)
+			jammed = true;
+		if (PPU[1] & 0x18)
+			displayFrames++;
+		if (f == 300)
+			dumpPGM("real_mid.pgm");
+	}
+
+	int nonzeroPixels = 0, distinctColors = 0, seen[64] = {};
+	for (int i = 0; i < 256 * 240; i++) {
+		uint8 p = XBuf[i] & 63;
+		if (p)
+			nonzeroPixels++;
+		if (!seen[p]++)
+			distinctColors++;
+	}
+
+	// real game signature checks
+	for (int a = 0x5000; a < 0x6000; a++)
+		xramNonZero += rd(a) != 0;
+	for (int a = 0x6000; a < 0x7000; a++)
+		wramNonZero += rd(a) != 0;
+	if (CHRRAM)
+		for (int i = 0; i < 4096; i++)
+			chrNonZero += CHRRAM[i] != 0;
+
+	printf("  info: jammed=%d display-frames=%d/600 XRAM-nz=%d WRAM-nz=%d CHRRAM-nz=%d nonzero-px=%d colors=%d last-PC=$%04X\n",
+		(int)jammed, displayFrames, xramNonZero, wramNonZero, chrNonZero, nonzeroPixels, distinctColors, X.PC);
+	CHECK(!jammed, "CPU not jammed");
+	CHECK(nonzeroPixels > 3000, "framebuffer has real pixels (black screen would be ~0)");
+
+	char pgmName[512];
+	snprintf(pgmName, sizeof(pgmName), "%s.pgm", path);
+	dumpPGM(pgmName);
+	printf("  (frames: real_mid.pgm, %s)\n", pgmName);
+	FCEU_fclose(fp);
+}
+
 int main(int argc, char **argv) {
 	static FCEUGI gi;
 	GameInfo = &gi;
@@ -438,6 +533,11 @@ int main(int argc, char **argv) {
 	runEmuCase("h195_game.nes", 80);
 	runEmuCase("h195_game2.nes", 96);
 	runEmuCase("h195_origin.nes", 32);
+
+	// real ROMs passed as extra args (downloaded by CI or given locally):
+	// load and run the actual game, dump frames, detect a black screen
+	for (int a = 1; a < argc; a++)
+		realRomCase(argv[a]);
 
 	if (g_failures) {
 		printf("RESULT: FAIL (%d check(s) failed)\n", g_failures);
