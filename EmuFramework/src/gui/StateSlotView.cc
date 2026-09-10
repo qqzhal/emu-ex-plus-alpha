@@ -31,7 +31,7 @@ static auto slotHeadingName(EmuSystem &sys)
 }
 
 StateSlotView::StateSlotView(ViewAttachParams attach):
-	TableView{"Save States", attach, menuItems},
+	TableView{"存档槽位", attach, menuItems},
 	load
 	{
 		"读档", attach,
@@ -52,7 +52,7 @@ StateSlotView::StateSlotView(ViewAttachParams attach):
 	},
 	save
 	{
-		"Save State", attach,
+		"保存存档", attach,
 		[this](const Input::Event &e)
 		{
 			if(app().shouldOverwriteExistingState())

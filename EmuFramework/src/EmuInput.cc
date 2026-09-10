@@ -652,13 +652,13 @@ std::string_view toString(AppKeyCode code)
 	{
 		case AppKeyCode::openContent: return "打开游戏";
 		case AppKeyCode::closeContent: return "关闭游戏";
-		case AppKeyCode::openSystemActions: return "Open System Actions";
-		case AppKeyCode::saveState: return "Save State";
+		case AppKeyCode::openSystemActions: return "打开系统动作";
+		case AppKeyCode::saveState: return "存档";
 		case AppKeyCode::loadState: return "读档";
 		case AppKeyCode::decStateSlot: return "上一个档案";
 		case AppKeyCode::incStateSlot: return "下一个档案";
 		case AppKeyCode::fastForward: return "快动作模式";
-		case AppKeyCode::takeScreenshot: return "Take Screenshot";
+		case AppKeyCode::takeScreenshot: return "截图";
 		case AppKeyCode::openMenu: return "打开菜单";
 		case AppKeyCode::toggleFastForward: return "快动作模式切换";
 		case AppKeyCode::turboModifier: return "连发调节";
