@@ -152,9 +152,18 @@ public:
 			[this](const Input::Event &e)
 			{
 				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, &importChtFileFilter, e, false);
+				// 记住上次导入的目录，下次打开直接定位
+				if(app().chtPath.size())
+					fPicker->setPath(app().chtPath, e);
+				fPicker->setOnChangePath(
+					[this](FSPicker &picker, const Input::Event &)
+					{
+						app().chtPath = std::string{picker.path()};
+					});
 				fPicker->setOnSelectPath(
 					[this](FSPicker &picker, CStringView path, std::string_view, const Input::Event &)
 					{
+						app().chtPath = std::string{FS::dirname(path)};
 						if(system().importCheatsFile(app(), path) >= 0)
 						{
 							onCheatsChanged();

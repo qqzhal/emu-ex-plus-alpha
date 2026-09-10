@@ -345,6 +345,7 @@ public:
 	RecentContent recentContent;
 	FS::PathString contentSearchPath;
 	std::string userScreenshotPath;
+	std::string chtPath;
 	Property<IG::PixelFormat, CFGKEY_RENDER_PIXEL_FORMAT,
 		PropertyDesc<IG::PixelFormat>{.isValid = renderPixelFormatIsValid}> renderPixelFormat;
 	ConditionalProperty<Config::cpuAffinity, CPUMask, CFGKEY_CPU_AFFINITY_MASK> cpuAffinityMask;

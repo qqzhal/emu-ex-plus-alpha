@@ -110,6 +110,7 @@ void EmuApp::saveConfigFile(FileIO &io)
 	writeStringOptionValue(io, CFGKEY_LAST_DIR, contentSearchPath);
 	writeStringOptionValue(io, CFGKEY_SAVE_PATH, system().userSaveDirectory());
 	writeStringOptionValue(io, CFGKEY_SCREENSHOTS_PATH, userScreenshotPath);
+	writeStringOptionValue(io, CFGKEY_CHT_DIR, chtPath);
 	system().writeConfig(ConfigType::MAIN, io);
 	inputManager.writeCustomKeyConfigs(io);
 	inputManager.writeSavedInputDevices(appContext(), io);
@@ -225,6 +226,7 @@ EmuApp::ConfigParams EmuApp::loadConfigFile(IG::ApplicationContext ctx)
 				case CFGKEY_SAVE_PATH:
 					return readStringOptionValue<FS::PathString>(io, [&](auto &&path){system().setUserSaveDirectory(path);});
 				case CFGKEY_SCREENSHOTS_PATH: return readStringOptionValue(io, userScreenshotPath);
+				case CFGKEY_CHT_DIR: return readStringOptionValue(io, chtPath);
 				case CFGKEY_SHOW_BUNDLED_GAMES: return EmuSystem::hasBundledGames ? readOptionValue(io, showsBundledGames) : false;
 				case CFGKEY_WINDOW_PIXEL_FORMAT: return readOptionValue(io, pendingWindowDrawableConf.pixelFormat, windowPixelFormatIsValid);
 				case CFGKEY_VIDEO_COLOR_SPACE: return readOptionValue(io, pendingWindowDrawableConf.colorSpace, colorSpaceIsValid);
