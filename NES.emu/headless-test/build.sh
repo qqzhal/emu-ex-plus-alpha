@@ -3,6 +3,11 @@
 # headless driver and runs the Mapper 195 (FS303) acceptance test.
 # Used locally and by .github/workflows/headless-test.yml.
 set -e
+# resolve ROM paths to absolute before cd-ing: the test binary runs inside $OUT
+ROMS=()
+for rom in "$@"; do
+	ROMS+=("$(realpath -e "$rom")")
+done
 cd "$(dirname "$0")/../.."
 
 CXX="${CXX:-g++}"
@@ -50,4 +55,4 @@ echo "LINK $OUT/headless-test"
 $CXX "${OBJs[@]}" -lz -o "$OUT/headless-test"
 
 cd "$OUT"
-./headless-test "$@"
+./headless-test "${ROMS[@]}"
