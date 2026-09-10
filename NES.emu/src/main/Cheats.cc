@@ -394,7 +394,9 @@ EditCheatsView::EditCheatsView(ViewAttachParams attach, CheatsView& cheatsView):
 	} {}
 
 // 解析 VirtuaNES 系 .cht 金手指文件并导入为普通秘籍条目。
-// 文件格式: UTF-16LE 或 UTF-8 文本，[组名] 分组，组下每行 "选项名=地址,值[,比较值];..."。
+// 文件格式: UTF-16LE 或 UTF-8 文本，[组名] 分组，组下每行 "选项名=地址,值[,高字节];..."。
+// 两段为单字节写；三段为 16 位值按小端写两个连续字节（addr=低, addr+1=高，
+// 已实测确认，如 "454,10,02" 即 454=0x10、455=0x02，合成 0x0210=528）。
 // 每个选项行导入为一条秘籍（多补丁挂在同一条目下），名字为 "组名 · 选项名"，
 // 单选项组（仅 ON 一行）直接用组名。界面上同组条目聚合为单选（见 Cheats.hh）。
 int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
@@ -537,8 +539,20 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 			unsigned addr = hexVal(addrS);
 			if(addr > 0xFFFF)
 				continue;
-			int compare = (c2 == std::string_view::npos) ? -1 : (int)hexVal(trim(rest.substr(c2 + 1)));
-			e.codes.emplace_back(addr, hexVal(valS), compare, 0);
+			auto val = hexVal(valS);
+			if(c2 == std::string_view::npos)
+			{
+				// 两段: 单字节无条件写
+				e.codes.emplace_back(addr, val, -1, 0);
+			}
+			else
+			{
+				// 三段: 16 位值按小端写两个连续字节 (addr=低字节, addr+1=高字节)
+				auto valHi = hexVal(trim(rest.substr(c2 + 1)));
+				e.codes.emplace_back(addr, val, -1, 0);
+				if(addr < 0xFFFF)
+					e.codes.emplace_back(addr + 1, valHi, -1, 0);
+			}
 		}
 		if(!e.codes.empty())
 			entries.push_back(std::move(e));
