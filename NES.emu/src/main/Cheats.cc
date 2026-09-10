@@ -26,6 +26,7 @@
 #include <fceu/cheat.h>
 #include <algorithm>
 #include <cstdio>
+#include "gbk_table.inc"
 
 void EncodeGG(char *str, int a, int v, int c);
 void RebuildSubCheats();
@@ -393,6 +394,60 @@ EditCheatsView::EditCheatsView(ViewAttachParams attach, CheatsView& cheatsView):
 		[this](const Input::Event& e) { addNewCheat("输入RAM十六进制地址", e, 0); }
 	} {}
 
+static bool validGBK(std::string_view s)
+{
+	for(size_t i = 0; i < s.size();)
+	{
+		auto b = (unsigned char)s[i];
+		if(b < 0x80)
+		{
+			i++;
+			continue;
+		}
+		if(b < 0x81 || b > 0xFE || i + 1 >= s.size())
+			return false;
+		auto b2 = (unsigned char)s[i + 1];
+		if(b2 < 0x40 || b2 > 0xFE || b2 == 0x7F)
+			return false;
+		if(!gbkToUnicode[(size_t)(b - 0x81) * 190 + (b2 - 0x40 - (b2 > 0x7F ? 1 : 0))])
+			return false;
+		i += 2;
+	}
+	return true;
+}
+
+static std::string gbkToUTF8(std::string_view s)
+{
+	std::string out;
+	for(size_t i = 0; i < s.size();)
+	{
+		auto b = (unsigned char)s[i];
+		if(b < 0x80)
+		{
+			out.push_back(b);
+			i++;
+			continue;
+		}
+		auto b2 = (unsigned char)s[i + 1];
+		auto cp = gbkToUnicode[(size_t)(b - 0x81) * 190 + (b2 - 0x40 - (b2 > 0x7F ? 1 : 0))];
+		if(cp < 0x80)
+			out.push_back(cp);
+		else if(cp < 0x800)
+		{
+			out.push_back(0xC0 | (cp >> 6));
+			out.push_back(0x80 | (cp & 0x3F));
+		}
+		else
+		{
+			out.push_back(0xE0 | (cp >> 12));
+			out.push_back(0x80 | ((cp >> 6) & 0x3F));
+			out.push_back(0x80 | (cp & 0x3F));
+		}
+		i += 2;
+	}
+	return out;
+}
+
 // 解析 VirtuaNES 系 .cht 金手指文件并导入为普通秘籍条目。
 // 文件格式: UTF-16LE 或 UTF-8 文本，[组名] 分组，组下每行 "选项名=地址,值[,高字节];..."。
 // 两段为单字节写；三段为 16 位值按小端写两个连续字节（addr=低, addr+1=高，
@@ -476,9 +531,11 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 		text.assign((char*)data.data() + 3, data.size() - 3);
 	else if(validUTF8({(char*)data.data(), data.size()}))
 		text.assign((char*)data.data(), data.size());
+	else if(validGBK({(char*)data.data(), data.size()}))
+		text = gbkToUTF8({(char*)data.data(), data.size()});
 	else
 	{
-		app.postErrorMessage("仅支持 UTF-16 或 UTF-8 编码的秘籍文件，GBK 请先用记事本另存为 UTF-16");
+		app.postErrorMessage("无法识别秘籍文件编码，请用记事本另存为 UTF-16 或 ANSI");
 		return -1;
 	}
 
@@ -505,7 +562,9 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 	};
 	auto hexVal = [&](std::string_view s) -> long
 	{
-		return strtol(std::string{s}.c_str(), nullptr, 16);
+		char *end = nullptr;
+		long v = strtol(std::string{s}.c_str(), &end, 16);
+		return end == std::string{s}.c_str() ? -1 : v;	// 未转换到任何数字则无效
 	};
 	struct Entry { std::string name; std::vector<CheatCode> codes; };
 	std::vector<Entry> entries;
@@ -558,8 +617,9 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 			{
 				auto comma = byteSeg.find(',');
 				auto byteS = trim(comma == std::string_view::npos ? byteSeg : byteSeg.substr(0, comma));
-				if(!byteS.empty() && cur <= 0xFFFF)
-					e.codes.emplace_back(cur, hexVal(byteS), -1, 0);
+				auto byteVal = byteS.empty() ? -1L : hexVal(byteS);
+				if(byteVal >= 0 && byteVal <= 0xFF && cur <= 0xFFFF)
+					e.codes.emplace_back(cur, byteVal, -1, 0);
 				if(comma == std::string_view::npos)
 					break;
 				byteSeg = byteSeg.substr(comma + 1);
