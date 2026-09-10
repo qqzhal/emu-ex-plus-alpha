@@ -354,4 +354,11 @@ void EmuSystem::forEachCheatCode(Cheat& c, DelegateFunc<bool(CheatCode&, std::st
 		static_cast<MainSystem*>(this)->forEachCheatCode(c, del);
 }
 
+int EmuSystem::importCheatsFile(EmuApp& app, CStringView path)
+{
+	if(&MainSystem::importCheatsFile != &EmuSystem::importCheatsFile)
+		return static_cast<MainSystem*>(this)->importCheatsFile(app, path);
+	return -1;
+}
+
 }

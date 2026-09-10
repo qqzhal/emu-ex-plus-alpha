@@ -17,16 +17,117 @@
 
 #include <emuframework/EmuApp.hh>
 #include <emuframework/EmuAppHelper.hh>
+#include <emuframework/FilePicker.hh>
 #include <emuframework/viewUtils.hh>
 #include <imagine/gui/TableView.hh>
 #include <imagine/gui/AlertView.hh>
 #include <imagine/gui/MenuItem.hh>
+#include <algorithm>
+#include <cctype>
+#include <functional>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace EmuEx
 {
 
 using namespace IG;
+
+// .cht 导入的互斥组命名约定: "组名 · 选项名"，秘籍列表按此前缀聚合为单选
+inline constexpr std::string_view cheatGroupSep = " · ";
+
+inline bool importChtFileFilter(std::string_view name)
+{
+	auto endsWithCI = [](std::string_view s, std::string_view suffix)
+	{
+		return s.size() >= suffix.size() && std::equal(suffix.rbegin(), suffix.rend(), s.rbegin(),
+			[](char a, char b) { return tolower((unsigned char)a) == tolower((unsigned char)b); });
+	};
+	return endsWithCI(name, ".cht");
+}
+
+// 互斥组单选页: 列出组内全部变体，点选即启用该变体并关闭组内其它条目
+class CheatGroupSelectView : public TableView, public EmuAppHelper
+{
+public:
+	struct Entry
+	{
+		Cheat *c;
+		std::string name;
+	};
+	CheatGroupSelectView(ViewAttachParams attach, std::string groupName_, std::vector<Entry> entries_,
+		std::function<void()> onChanged_):
+		TableView
+		{
+			groupName_,
+			attach,
+			[this](ItemMessage msg) -> ItemReply
+			{
+				return msg.visit(overloaded
+				{
+					[&](const ItemsMessage&) -> ItemReply { return items.size(); },
+					[&](const GetItemMessage& m) -> ItemReply { return items[m.idx]; },
+				});
+			}
+		},
+		groupName{std::move(groupName_)},
+		entries{std::move(entries_)},
+		onChanged{std::move(onChanged_)}
+	{
+		loadItems();
+	}
+
+protected:
+	std::string groupName;
+	std::vector<Entry> entries;
+	std::function<void()> onChanged;
+	std::vector<TextMenuItem> item;
+	std::vector<MenuItem*> items;
+
+	std::string shortName(const std::string &name) const
+	{
+		auto prefix = groupName + std::string{cheatGroupSep};
+		return name.starts_with(prefix) ? name.substr(prefix.size()) : name;
+	}
+
+	void loadItems()
+	{
+		item.clear();
+		items.clear();
+		item.reserve(entries.size() + 1);
+		items.reserve(entries.size() + 1);
+		item.emplace_back("不启用", attachParams(), [this](const Input::Event &)
+		{
+			for(auto &e : entries)
+				system().setCheatEnabled(*e.c, false);
+			changed();
+		});
+		items.emplace_back(&item.back());
+		for(auto &e : entries)
+		{
+			auto label = std::string{system().isCheatEnabled(*e.c) ? "● " : "○ "} + shortName(e.name);
+			item.emplace_back(std::move(label), attachParams(),
+				[this, c = e.c](const Input::Event &)
+				{
+					for(auto &e2 : entries)
+						system().setCheatEnabled(*e2.c, false);
+					system().setCheatEnabled(*c, true);
+					changed();
+				});
+			items.emplace_back(&item.back());
+		}
+	}
+
+	void changed()
+	{
+		loadItems();
+		place();
+		postDraw();
+		if(onChanged)
+			onChanged();
+	}
+};
 
 class CheatsView : public TableView, public EmuAppHelper
 {
@@ -40,15 +141,27 @@ public:
 			{
 				return msg.visit(overloaded
 				{
-					[&](const ItemsMessage&) -> ItemReply { return 1 + cheats.size(); },
-					[&](const GetItemMessage& m) -> ItemReply
-					{
-						if(m.idx == 0)
-							return &edit;
-						else
-							return &cheats[m.idx - 1];
-					},
+					[&](const ItemsMessage&) -> ItemReply { return items.size(); },
+					[&](const GetItemMessage& m) -> ItemReply { return items[m.idx]; },
 				});
+			}
+		},
+		import
+		{
+			"从 .cht 文件导入", attach,
+			[this](const Input::Event &e)
+			{
+				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, &importChtFileFilter, e, false);
+				fPicker->setOnSelectPath(
+					[this](FSPicker &picker, CStringView path, std::string_view, const Input::Event &)
+					{
+						if(system().importCheatsFile(app(), path) >= 0)
+						{
+							onCheatsChanged();
+							picker.dismiss();
+						}
+					});
+				pushAndShowModal(std::move(fPicker), e);
 			}
 		},
 		edit
@@ -73,20 +186,102 @@ public:
 	}
 
 protected:
-	TextMenuItem edit;
+	TextMenuItem edit, import;
 	std::vector<BoolMenuItem> cheats;
+	std::vector<DualTextMenuItem> groups;
+	std::vector<MenuItem*> items;
 
+	// .cht 导入的互斥组（名字含 "组名 · 选项名" 前缀）聚合为一行单选入口；
+	// 单选项组与手动添加的条目显示为普通开关
 	void loadCheatItems()
 	{
 		cheats.clear();
-		system().forEachCheat([this](auto& c, std::string_view name)
+		groups.clear();
+		items.clear();
+		struct Entry { Cheat *c; std::string name; };
+		std::vector<Entry> all;
+		system().forEachCheat([&](Cheat &c, std::string_view name)
 		{
-			cheats.emplace_back(name, attachParams(), system().isCheatEnabled(c), [this, &c](BoolMenuItem& item)
-			{
-				system().setCheatEnabled(c, item.flipBoolValue(*this));
-			});
+			all.push_back({&c, std::string{name}});
 			return true;
 		});
+		std::vector<std::pair<std::string, std::vector<Entry*>>> groupList;
+		std::vector<Entry*> plain;
+		for(auto &e : all)
+		{
+			auto sep = e.name.find(cheatGroupSep);
+			if(sep == std::string::npos)
+			{
+				plain.push_back(&e);
+				continue;
+			}
+			auto gName = e.name.substr(0, sep);
+			auto found = std::find_if(groupList.begin(), groupList.end(),
+				[&](auto &g) { return g.first == gName; });
+			if(found == groupList.end())
+				groupList.emplace_back(std::move(gName), std::vector<Entry*>{&e});
+			else
+				found->second.push_back(&e);
+		}
+		size_t singleItemGroups = 0;
+		for(auto &g : groupList)
+			singleItemGroups += g.second.size() == 1;
+		cheats.reserve(plain.size() + singleItemGroups);
+		groups.reserve(groupList.size());
+		items.reserve(2 + plain.size() + singleItemGroups + groupList.size());
+		items.emplace_back(&import);
+		items.emplace_back(&edit);
+		for(auto &g : groupList)
+		{
+			if(g.second.size() == 1)
+			{
+				auto *row = g.second[0];
+				cheats.emplace_back(row->name, attachParams(), system().isCheatEnabled(*row->c),
+					[this, c = row->c](BoolMenuItem &item)
+					{
+						system().setCheatEnabled(*c, item.flipBoolValue(*this));
+					});
+				items.emplace_back(&cheats.back());
+			}
+			else
+			{
+				Cheat *active = nullptr;
+				for(auto *e : g.second)
+					if(system().isCheatEnabled(*e->c))
+					{
+						active = e->c;
+						break;
+					}
+				std::string current = "未启用";
+				if(active)
+				{
+					auto fullName = system().cheatName(*active);
+					auto sep = fullName.find(cheatGroupSep);
+					current = (sep == std::string_view::npos) ? std::string{fullName}
+						: std::string{fullName.substr(sep + cheatGroupSep.size())};
+				}
+				std::vector<CheatGroupSelectView::Entry> groupEntries;
+				groupEntries.reserve(g.second.size());
+				for(auto *e : g.second)
+					groupEntries.push_back({e->c, e->name});
+				groups.emplace_back(g.first, std::move(current), attachParams(),
+					[this, groupEntries = std::move(groupEntries), groupName = g.first](const Input::Event &e) mutable
+					{
+						pushAndShow(makeView<CheatGroupSelectView>(attachParams(), std::move(groupName),
+							std::move(groupEntries), [this]{ onCheatsChanged(); }), e);
+					});
+				items.emplace_back(&groups.back());
+			}
+		}
+		for(auto *e : plain)
+		{
+			cheats.emplace_back(e->name, attachParams(), system().isCheatEnabled(*e->c),
+				[this, c = e->c](BoolMenuItem &item)
+				{
+					system().setCheatEnabled(*c, item.flipBoolValue(*this));
+				});
+			items.emplace_back(&cheats.back());
+		}
 	}
 };
 

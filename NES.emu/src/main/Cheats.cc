@@ -24,6 +24,8 @@
 #include "MainSystem.hh"
 #include <fceu/driver.h>
 #include <fceu/cheat.h>
+#include <algorithm>
+#include <cstdio>
 
 void EncodeGG(char *str, int a, int v, int c);
 void RebuildSubCheats();
@@ -390,5 +392,183 @@ EditCheatsView::EditCheatsView(ViewAttachParams attach, CheatsView& cheatsView):
 		"添加内存补丁", attachParams(),
 		[this](const Input::Event& e) { addNewCheat("输入RAM十六进制地址", e, 0); }
 	} {}
+
+// 解析 VirtuaNES 系 .cht 金手指文件并导入为普通秘籍条目。
+// 文件格式: UTF-16LE 或 UTF-8 文本，[组名] 分组，组下每行 "选项名=地址,值[,比较值];..."。
+// 每个选项行导入为一条秘籍（多补丁挂在同一条目下），名字为 "组名 · 选项名"，
+// 单选项组（仅 ON 一行）直接用组名。界面上同组条目聚合为单选（见 Cheats.hh）。
+int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
+{
+	std::FILE *f = fopen(std::string{pathStr.data(), pathStr.size()}.c_str(), "rb");
+	if(!f)
+	{
+		app.postErrorMessage("无法打开秘籍文件");
+		return -1;
+	}
+	std::vector<uint8_t> data;
+	{
+		char buf[8192];
+		size_t n;
+		while((n = fread(buf, 1, sizeof(buf), f)))
+			data.insert(data.end(), buf, buf + n);
+	}
+	fclose(f);
+	if(data.size() < 4)
+	{
+		app.postErrorMessage("秘籍文件内容为空");
+		return -1;
+	}
+
+	auto validUTF8 = [](std::string_view s)
+	{
+		for(size_t i = 0; i < s.size();)
+		{
+			auto c = (unsigned char)s[i];
+			int len = (c & 0xE0) == 0xC0 ? 2 : (c & 0xF0) == 0xE0 ? 3 : (c & 0xF8) == 0xF0 ? 4 : 0;
+			if(!len || i + len > s.size())
+				return false;
+			for(int j = 1; j < len; j++)
+				if(((unsigned char)s[i + j] & 0xC0) != 0x80)
+					return false;
+			i += len;
+		}
+		return true;
+	};
+	std::string text;
+	if(data[0] == 0xFF && data[1] == 0xFE) // UTF-16LE BOM
+	{
+		for(size_t i = 2; i + 1 < data.size(); i += 2)
+		{
+			unsigned cp = data[i] | (data[i + 1] << 8);
+			if(cp >= 0xD800 && cp < 0xDC00 && i + 3 < data.size())
+			{
+				unsigned lo = data[i + 2] | (data[i + 3] << 8);
+				if(lo >= 0xDC00 && lo < 0xE000)
+				{
+					cp = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
+					i += 2;
+				}
+			}
+			if(cp < 0x80) text.push_back(cp);
+			else if(cp < 0x800)
+			{
+				text.push_back(0xC0 | (cp >> 6));
+				text.push_back(0x80 | (cp & 0x3F));
+			}
+			else if(cp < 0x10000)
+			{
+				text.push_back(0xE0 | (cp >> 12));
+				text.push_back(0x80 | ((cp >> 6) & 0x3F));
+				text.push_back(0x80 | (cp & 0x3F));
+			}
+			else
+			{
+				text.push_back(0xF0 | (cp >> 18));
+				text.push_back(0x80 | ((cp >> 12) & 0x3F));
+				text.push_back(0x80 | ((cp >> 6) & 0x3F));
+				text.push_back(0x80 | (cp & 0x3F));
+			}
+		}
+	}
+	else if(data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF)
+		text.assign((char*)data.data() + 3, data.size() - 3);
+	else if(validUTF8({(char*)data.data(), data.size()}))
+		text.assign((char*)data.data(), data.size());
+	else
+	{
+		app.postErrorMessage("仅支持 UTF-16 或 UTF-8 编码的秘籍文件，GBK 请先用记事本另存为 UTF-16");
+		return -1;
+	}
+
+	auto trim = [](std::string_view s)
+	{
+		while(!s.empty() && (s.front() == ' ' || s.front() == '\t' || s.front() == '\r'))
+			s.remove_prefix(1);
+		while(!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\r'))
+			s.remove_suffix(1);
+		return s;
+	};
+	auto hexVal = [&](std::string_view s) -> long
+	{
+		return strtol(std::string{s}.c_str(), nullptr, 16);
+	};
+	struct Entry { std::string name; std::vector<CheatCode> codes; };
+	std::vector<Entry> entries;
+	std::string group;
+	size_t lineStart = 0;
+	for(size_t pos = 0; pos <= text.size(); pos++)
+	{
+		if(pos != text.size() && text[pos] != '\n')
+			continue;
+		auto line = trim(std::string_view{text}.substr(lineStart, pos - lineStart));
+		lineStart = pos + 1;
+		if(line.empty())
+			continue;
+		if(line.front() == '[' && line.back() == ']')
+		{
+			group = std::string{trim(line.substr(1, line.size() - 2))};
+			continue;
+		}
+		auto eq = line.find('=');
+		if(eq == std::string_view::npos || group.empty())
+			continue;
+		auto option = trim(line.substr(0, eq));
+		Entry e;
+		e.name = (option.empty() || option == "ON") ? group : std::format("{}{}{}", group, cheatGroupSep, option);
+		auto codesStr = line.substr(eq + 1);
+		size_t segStart = 0;
+		for(size_t segPos = 0; segPos <= codesStr.size(); segPos++)
+		{
+			if(segPos != codesStr.size() && codesStr[segPos] != ';')
+				continue;
+			auto seg = trim(codesStr.substr(segStart, segPos - segStart));
+			segStart = segPos + 1;
+			if(seg.empty())
+				continue;
+			auto c1 = seg.find(',');
+			if(c1 == std::string_view::npos)
+				continue;
+			auto addrS = trim(seg.substr(0, c1));
+			auto rest = seg.substr(c1 + 1);
+			auto c2 = rest.find(',');
+			auto valS = trim(c2 == std::string_view::npos ? rest : rest.substr(0, c2));
+			if(addrS.empty() || valS.empty())
+				continue;
+			unsigned addr = hexVal(addrS);
+			if(addr > 0xFFFF)
+				continue;
+			int compare = (c2 == std::string_view::npos) ? -1 : (int)hexVal(trim(rest.substr(c2 + 1)));
+			e.codes.emplace_back(addr, hexVal(valS), compare, 0);
+		}
+		if(!e.codes.empty())
+			entries.push_back(std::move(e));
+	}
+	if(entries.empty())
+	{
+		app.postErrorMessage("文件中没有找到有效的秘籍条目");
+		return -1;
+	}
+
+	int added = 0, skipped = 0;
+	for(auto &e : entries)
+	{
+		bool exists = std::any_of(cheats.begin(), cheats.end(),
+			[&](auto &c) { return c.name == e.name; });
+		if(exists)
+		{
+			skipped++;
+			continue;
+		}
+		auto &c = cheats.emplace_back(e.name);
+		for(auto &code : e.codes)
+			c.codes.emplace_back(code.addr, code.val, code.compare, code.type);
+		added++;
+	}
+	if(added)
+		syncCheats();
+	app.postMessage(added != 0, std::format("已导入 {} 条秘籍{}", added,
+		skipped ? std::format("，跳过 {} 条同名", skipped) : std::string{}));
+	return added;
+}
 
 }
