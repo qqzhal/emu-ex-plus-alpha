@@ -188,6 +188,7 @@ public:
 	void forEachCheat(DelegateFunc<bool(Cheat&, std::string_view)>);
 	void forEachCheatCode(Cheat&, DelegateFunc<bool(CheatCode&, std::string_view)>);
 	int importCheatsFile(EmuApp&, CStringView path);
+	bool removeAllCheats(EmuApp&);
 
 private:
 	void cacheUsingZapper();

@@ -361,4 +361,11 @@ int EmuSystem::importCheatsFile(EmuApp& app, CStringView path)
 	return -1;
 }
 
+bool EmuSystem::removeAllCheats(EmuApp& app)
+{
+	if(&MainSystem::removeAllCheats != &EmuSystem::removeAllCheats)
+		return static_cast<MainSystem*>(this)->removeAllCheats(app);
+	return false;
+}
+
 }

@@ -185,6 +185,31 @@ public:
 				pushAndShowModal(std::move(fPicker), e);
 			}
 		},
+		clear
+		{
+			"清空秘籍", attach,
+			[this](const Input::Event &e)
+			{
+				size_t count = 0;
+				system().forEachCheat([&](Cheat &, std::string_view)
+				{
+					count++;
+					return false;	// 只需知道是否为空
+				});
+				if(count == 0)
+				{
+					app().postMessage("当前游戏没有秘籍");
+					return;
+				}
+				pushAndShowModal(makeView<YesNoAlertView>("确定清空当前游戏全部秘籍?",
+					YesNoAlertView::Delegates{.onYes = [this]
+					{
+						system().removeAllCheats(app());
+						onCheatsChanged();
+						app().postMessage("已清空当前游戏全部秘籍");
+					}}), e);
+			}
+		},
 		edit
 		{
 			"添加/编辑", attach,
@@ -207,7 +232,7 @@ public:
 	}
 
 protected:
-	TextMenuItem import, edit;
+	TextMenuItem import, clear, edit;
 	std::vector<BoolMenuItem> cheats;
 	std::vector<DualTextMenuItem> groups;
 	std::vector<MenuItem*> items;
@@ -251,6 +276,7 @@ protected:
 		groups.reserve(groupList.size());
 		items.reserve(2 + plain.size() + singleItemGroups + groupList.size());
 		items.emplace_back(&import);
+		items.emplace_back(&clear);
 		items.emplace_back(&edit);
 		for(auto &g : groupList)
 		{

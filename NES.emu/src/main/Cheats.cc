@@ -658,4 +658,13 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 	return added;
 }
 
+bool NesSystem::removeAllCheats(EmuApp&)
+{
+	if(cheats.empty())
+		return false;
+	cheats.clear();
+	syncCheats();
+	return true;
+}
+
 }
