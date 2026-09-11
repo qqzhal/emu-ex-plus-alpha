@@ -162,9 +162,9 @@ public:
 			[this](const Input::Event &e)
 			{
 				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, &importChtFileFilter, e, false);
-				// 记住上次导入的目录，下次打开直接定位
-				if(app().chtPath.size())
-					fPicker->setPath(app().chtPath, e);
+				// 记住上次导入的目录，下次打开直接定位; 首次回退到 ROM 搜索目录
+				fPicker->setPath(app().chtPath.size() ? app().chtPath
+					: FS::PathString{app().contentSearchPath}, e);
 				fPicker->setOnChangePath(
 					[this](FSPicker &picker, const Input::Event &)
 					{
