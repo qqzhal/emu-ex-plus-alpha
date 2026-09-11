@@ -158,7 +158,7 @@ public:
 		},
 		import
 		{
-			"从 .cht 文件导入", attach,
+			"导入EC码cht文件", attach,
 			[this](const Input::Event &e)
 			{
 				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, &importChtFileFilter, e, false);
