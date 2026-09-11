@@ -274,10 +274,10 @@ protected:
 				for(auto *e : g.second)
 					groupEntries.push_back({e->c, e->name});
 				groups.emplace_back(g.first, std::move(current), attachParams(),
-					[this, groupEntries, groupName](const Input::Event &e)
+					[this, groupEntries, groupName = g.first](const Input::Event &e)
 					{
-						pushAndShow(makeView<CheatGroupSelectView>(std::move(groupName),
-							std::move(groupEntries), [this]{ onCheatsChanged(); }), e);
+						pushAndShow(makeView<CheatGroupSelectView>(groupName, groupEntries,
+							[this]{ onCheatsChanged(); }), e);
 					});
 				items.emplace_back(&groups.back());
 			}
