@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <cctype>
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -127,6 +128,15 @@ protected:
 		if(onChanged)
 			onChanged();
 	}
+};
+
+// 互斥组打开所需数据的共享载体: MenuItem 回调 delegate 内联存储仅 16 字节,
+// 大数据须放堆上由 shared_ptr 携带
+struct CheatGroupLaunchData
+{
+	std::string groupName;
+	std::vector<CheatGroupSelectView::Entry> entries;
+	CheatsView *self{};
 };
 
 class CheatsView : public TableView, public EmuAppHelper
@@ -273,11 +283,16 @@ protected:
 				groupEntries.reserve(g.second.size());
 				for(auto *e : g.second)
 					groupEntries.push_back({e->c, e->name});
+				auto launchData = std::make_shared<CheatGroupLaunchData>();
+				launchData->groupName = g.first;
+				launchData->entries = std::move(groupEntries);
+				launchData->self = this;
 				groups.emplace_back(g.first, std::move(current), attachParams(),
-					[this, groupEntries, groupName = g.first](const Input::Event &e)
+					[launchData](const Input::Event &e)
 					{
-						pushAndShow(makeView<CheatGroupSelectView>(groupName, groupEntries,
-							[this]{ onCheatsChanged(); }), e);
+						auto &d = *launchData;
+						d.self->pushAndShow(d.self->makeView<CheatGroupSelectView>(d.groupName, d.entries,
+							[self = d.self]{ self->onCheatsChanged(); }), e);
 					});
 				items.emplace_back(&groups.back());
 			}
