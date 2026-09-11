@@ -163,8 +163,11 @@ public:
 			{
 				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, &importChtFileFilter, e, false);
 				// 记住上次导入的目录，下次打开直接定位; 首次回退到 ROM 搜索目录
-				fPicker->setPath(app().chtPath.size() ? app().chtPath.c_str()
-					: app().contentSearchPath.c_str(), e);
+				auto initialDir = app().chtPath.size() ? std::string{app().chtPath.c_str()}
+					: std::string{app().contentSearchPath.c_str()};
+				fPicker->setPath(initialDir, e);
+				app().chtPath = std::move(initialDir);
+				// 目录只在此处持续记录; 回调 path 可能是 URI, 不可对其做 dirname
 				fPicker->setOnChangePath(
 					[this](FSPicker &picker, const Input::Event &)
 					{
@@ -173,7 +176,6 @@ public:
 				fPicker->setOnSelectPath(
 					[this](FSPicker &picker, CStringView path, std::string_view, const Input::Event &)
 					{
-						app().chtPath = std::string{FS::dirname(path)};
 						if(system().importCheatsFile(app(), path) >= 0)
 						{
 							onCheatsChanged();
