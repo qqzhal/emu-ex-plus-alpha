@@ -456,8 +456,10 @@ static std::string gbkToUTF8(std::string_view s)
 // 单选项组（仅 ON 一行）直接用组名。界面上同组条目聚合为单选（见 Cheats.hh）。
 int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 {
-	std::FILE *f = fopen(std::string{pathStr.data(), pathStr.size()}.c_str(), "rb");
-	if(!f)
+	// FSPicker 可能返回 content:// URI, 须用框架 IO 层而非 stdio 打开
+	auto fdHolder = appContext().openFileUriFd(std::string{pathStr});
+	int fd = fdHolder.get();
+	if(fd < 0)
 	{
 		app.postErrorMessage("无法打开秘籍文件");
 		return -1;
@@ -465,11 +467,10 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 	std::vector<uint8_t> data;
 	{
 		char buf[8192];
-		size_t n;
-		while((n = fread(buf, 1, sizeof(buf), f)))
+		ssize_t n;
+		while((n = read(fd, buf, sizeof(buf))) > 0)
 			data.insert(data.end(), buf, buf + n);
 	}
-	fclose(f);
 	if(data.size() < 4)
 	{
 		app.postErrorMessage("秘籍文件内容为空");

@@ -163,8 +163,8 @@ public:
 			{
 				auto fPicker = makeView<FilePicker>(FSPicker::Mode::FILE, &importChtFileFilter, e, false);
 				// 记住上次导入的目录，下次打开直接定位; 首次回退到 ROM 搜索目录
-				fPicker->setPath(app().chtPath.size() ? app().chtPath
-					: FS::PathString{app().contentSearchPath}, e);
+				fPicker->setPath(app().chtPath.size() ? app().chtPath.c_str()
+					: app().contentSearchPath.c_str(), e);
 				fPicker->setOnChangePath(
 					[this](FSPicker &picker, const Input::Event &)
 					{
