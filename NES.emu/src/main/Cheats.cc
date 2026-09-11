@@ -24,6 +24,7 @@
 #include "MainSystem.hh"
 #include <fceu/driver.h>
 #include <fceu/cheat.h>
+#include <fceu/file.h>
 #include <algorithm>
 #include <cstdio>
 #include "gbk_table.inc"
@@ -663,7 +664,13 @@ bool NesSystem::removeAllCheats(EmuApp&)
 	if(cheats.empty())
 		return false;
 	cheats.clear();
-	syncCheats();
+	syncCheats();	// FlushGameCheats: 空列表时会尝试 remove 秘籍文件,
+			// 但 sdcard/FUSE 上该删除可能失败, 导致重载游戏时旧秘籍恢复
+	// 与"删除单条后重写文件"相同的可靠写入机制: 把秘籍文件截断为空,
+	// 保证重载游戏时列表为空
+	if(auto fn = FCEU_MakeFName(FCEUMKF_CHEAT, 0, 0); !fn.empty())
+		if(FILE *fp = FCEUD_UTF8fopen(fn, "wb"))
+			fclose(fp);
 	return true;
 }
 
