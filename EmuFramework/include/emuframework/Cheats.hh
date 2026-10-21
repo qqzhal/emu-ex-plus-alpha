@@ -238,7 +238,8 @@ protected:
 	std::vector<MenuItem*> items;
 
 	// .cht 导入的互斥组（名字含 "组名 · 选项名" 前缀）聚合为一行单选入口；
-	// 单选项组与手动添加的条目显示为普通开关
+	// 单选项组与手动添加的条目显示为普通开关；列表整体按秘籍存储序（即 cht 内
+	// 各项首次出现顺序）排列，组行出现在其组首条目的原始位置
 	void loadCheatItems()
 	{
 		cheats.clear();
@@ -251,88 +252,105 @@ protected:
 			all.push_back({&c, std::string{name}});
 			return true;
 		});
-		std::vector<std::pair<std::string, std::vector<Entry*>>> groupList;
-		std::vector<Entry*> plain;
-		for(auto &e : all)
+		struct Group { std::string name; std::vector<Entry*> entries; size_t firstIdx; };
+		std::vector<Group> groupList;
+		struct PlainEntry { Entry *e; size_t idx; };
+		std::vector<PlainEntry> plain;
+		for(size_t idx = 0; idx < all.size(); idx++)
 		{
+			auto &e = all[idx];
 			auto sep = e.name.find(cheatGroupSep);
 			if(sep == std::string::npos)
 			{
-				plain.push_back(&e);
+				plain.push_back({&e, idx});
 				continue;
 			}
 			auto gName = e.name.substr(0, sep);
 			auto found = std::find_if(groupList.begin(), groupList.end(),
-				[&](auto &g) { return g.first == gName; });
+				[&](auto &g) { return g.name == gName; });
 			if(found == groupList.end())
-				groupList.emplace_back(std::move(gName), std::vector<Entry*>{&e});
+				groupList.push_back({std::move(gName), {&e}, idx});
 			else
-				found->second.push_back(&e);
+				found->entries.push_back(&e);
 		}
+		// 组行与普通条目按首次出现位置归位（稳定排序，同序时保持原相对顺序）
+		struct Row { size_t idx; bool isGroup; Group *g; PlainEntry *p; };
+		std::vector<Row> rows;
+		rows.reserve(plain.size() + groupList.size());
+		for(auto &g : groupList)
+			rows.push_back({g.firstIdx, true, &g, nullptr});
+		for(auto &p : plain)
+			rows.push_back({p.idx, false, nullptr, &p});
+		std::stable_sort(rows.begin(), rows.end(), [](auto &a, auto &b){ return a.idx < b.idx; });
 		size_t singleItemGroups = 0;
 		for(auto &g : groupList)
-			singleItemGroups += g.second.size() == 1;
+			singleItemGroups += g.entries.size() == 1;
 		cheats.reserve(plain.size() + singleItemGroups);
 		groups.reserve(groupList.size());
-		items.reserve(2 + plain.size() + singleItemGroups + groupList.size());
+		items.reserve(3 + plain.size() + singleItemGroups + groupList.size());
 		items.emplace_back(&import);
 		items.emplace_back(&clear);
 		items.emplace_back(&edit);
-		for(auto &g : groupList)
+		for(auto &r : rows)
 		{
-			if(g.second.size() == 1)
+			if(r.isGroup)
 			{
-				auto *row = g.second[0];
-				cheats.emplace_back(row->name, attachParams(), system().isCheatEnabled(*row->c),
-					[this, c = row->c](BoolMenuItem &item)
+				auto &g = *r.g;
+				if(g.entries.size() == 1)
+				{
+					auto *row = g.entries[0];
+					cheats.emplace_back(row->name, attachParams(), system().isCheatEnabled(*row->c),
+						[this, c = row->c](BoolMenuItem &item)
+						{
+							system().setCheatEnabled(*c, item.flipBoolValue(*this));
+						});
+					items.emplace_back(&cheats.back());
+				}
+				else
+				{
+					Cheat *active = nullptr;
+					for(auto *e : g.entries)
+						if(system().isCheatEnabled(*e->c))
+						{
+							active = e->c;
+							break;
+						}
+					std::string current = "未启用";
+					if(active)
+					{
+						auto fullName = system().cheatName(*active);
+						auto sep = fullName.find(cheatGroupSep);
+						current = (sep == std::string_view::npos) ? std::string{fullName}
+							: std::string{fullName.substr(sep + cheatGroupSep.size())};
+					}
+					std::vector<CheatGroupSelectView::Entry> groupEntries;
+					groupEntries.reserve(g.entries.size());
+					for(auto *e : g.entries)
+						groupEntries.push_back({e->c, e->name});
+					auto launchData = std::make_shared<CheatGroupLaunchData>();
+					launchData->groupName = g.name;
+					launchData->entries = std::move(groupEntries);
+					launchData->self = this;
+					groups.emplace_back(g.name, std::move(current), attachParams(),
+						[launchData](const Input::Event &e)
+						{
+							auto &d = *launchData;
+							d.self->pushAndShow(d.self->makeView<CheatGroupSelectView>(d.groupName, d.entries,
+								[self = d.self]{ self->onCheatsChanged(); }), e);
+						});
+					items.emplace_back(&groups.back());
+				}
+			}
+			else
+			{
+				auto *e = r.p->e;
+				cheats.emplace_back(e->name, attachParams(), system().isCheatEnabled(*e->c),
+					[this, c = e->c](BoolMenuItem &item)
 					{
 						system().setCheatEnabled(*c, item.flipBoolValue(*this));
 					});
 				items.emplace_back(&cheats.back());
 			}
-			else
-			{
-				Cheat *active = nullptr;
-				for(auto *e : g.second)
-					if(system().isCheatEnabled(*e->c))
-					{
-						active = e->c;
-						break;
-					}
-				std::string current = "未启用";
-				if(active)
-				{
-					auto fullName = system().cheatName(*active);
-					auto sep = fullName.find(cheatGroupSep);
-					current = (sep == std::string_view::npos) ? std::string{fullName}
-						: std::string{fullName.substr(sep + cheatGroupSep.size())};
-				}
-				std::vector<CheatGroupSelectView::Entry> groupEntries;
-				groupEntries.reserve(g.second.size());
-				for(auto *e : g.second)
-					groupEntries.push_back({e->c, e->name});
-				auto launchData = std::make_shared<CheatGroupLaunchData>();
-				launchData->groupName = g.first;
-				launchData->entries = std::move(groupEntries);
-				launchData->self = this;
-				groups.emplace_back(g.first, std::move(current), attachParams(),
-					[launchData](const Input::Event &e)
-					{
-						auto &d = *launchData;
-						d.self->pushAndShow(d.self->makeView<CheatGroupSelectView>(d.groupName, d.entries,
-							[self = d.self]{ self->onCheatsChanged(); }), e);
-					});
-				items.emplace_back(&groups.back());
-			}
-		}
-		for(auto *e : plain)
-		{
-			cheats.emplace_back(e->name, attachParams(), system().isCheatEnabled(*e->c),
-				[this, c = e->c](BoolMenuItem &item)
-				{
-					system().setCheatEnabled(*c, item.flipBoolValue(*this));
-				});
-			items.emplace_back(&cheats.back());
 		}
 	}
 };
