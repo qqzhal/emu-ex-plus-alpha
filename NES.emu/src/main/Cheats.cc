@@ -450,11 +450,15 @@ static std::string gbkToUTF8(std::string_view s)
 }
 
 // 解析 VirtuaNES 系 .cht 金手指文件并导入为普通秘籍条目。
-// 文件格式: UTF-16LE 或 UTF-8 文本，[组名] 分组，组下每行 "选项名=地址,值[,高字节];..."。
+// 文件格式: UTF-16LE / UTF-8 / GBK 文本，[组名] 分组，组下每行 "选项名=地址,值[,高字节];..."。
 // 两段为单字节写；三段为 16 位值按小端写两个连续字节（addr=低, addr+1=高，
 // 已实测确认，如 "454,10,02" 即 454=0x10、455=0x02，合成 0x0210=528）。
 // 每个选项行导入为一条秘籍（多补丁挂在同一条目下），名字为 "组名 · 选项名"，
 // 单选项组（仅 ON 一行）直接用组名。界面上同组条目聚合为单选（见 Cheats.hh）。
+// 导入条目一律保持关闭状态（与手动添加一致），由用户按需开启。
+// EC(EmuCheat) FC 地址是其内存缓冲偏移而非 CPU 地址: 0x0000-0x07FF 为内部 RAM,
+// 0x0800 起为卡带 WRAM(即 CPU $6000), 导入时折算回 CPU 地址(如 EC 0x081E 即
+// $601E, 经 FF2 金钱码实测确认), 否则内核补丁写不中(详见 toCpu 处注释)。
 int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 {
 	// FSPicker 可能返回 content:// URI, 须用框架 IO 层而非 stdio 打开
@@ -568,6 +572,10 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 		long v = strtol(std::string{s}.c_str(), &end, 16);
 		return end == std::string{s}.c_str() ? -1 : v;	// 未转换到任何数字则无效
 	};
+	// EC 地址 0x0800 起是卡带 WRAM(EC 缓冲 = 内部 2KB + WRAM 连续排布), 须折算
+	// 回 CPU 地址内核补丁才能命中: 内部 RAM 与 $6000-$7FFF 均注册了直接指针
+	// (FCEU_CheatAddRAM), 而 $0800-$1FFF 镜像段没有, 原样写入会被静默跳过
+	auto toCpu = [](unsigned a) { return a < 0x800 ? a : a < 0x2800 ? a + 0x5800 : a; };
 	struct Entry { std::string name; std::vector<CheatCode> codes; };
 	std::vector<Entry> entries;
 	std::string group;
@@ -621,7 +629,7 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 				auto byteS = trim(comma == std::string_view::npos ? byteSeg : byteSeg.substr(0, comma));
 				auto byteVal = byteS.empty() ? -1L : hexVal(byteS);
 				if(byteVal >= 0 && byteVal <= 0xFF && cur <= 0xFFFF)
-					e.codes.emplace_back(cur, byteVal, -1, 0);
+					e.codes.emplace_back(toCpu(cur), byteVal, -1, 0);
 				if(comma == std::string_view::npos)
 					break;
 				byteSeg = byteSeg.substr(comma + 1);
@@ -647,7 +655,7 @@ int NesSystem::importCheatsFile(EmuApp& app, CStringView pathStr)
 			skipped++;
 			continue;
 		}
-		auto &c = cheats.emplace_back(e.name);
+		auto &c = cheats.emplace_back(e.name);	// status 保持默认 0: 导入即关, 由用户按需启用
 		for(auto &code : e.codes)
 			c.codes.emplace_back(code.addr, code.val, code.compare, code.type);
 		added++;
